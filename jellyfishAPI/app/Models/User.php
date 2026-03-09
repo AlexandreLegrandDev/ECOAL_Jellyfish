@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // public function collection()
+    // {
+    //     return $this->hasOne(Collection::class, 'id_user');
+    // }
 }

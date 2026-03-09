@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collection', function (Blueprint $table) {
+        Schema::create('collections', function (Blueprint $table) {
             $table->id();
-            $table->integer("id_user");
-            $table->foreign("id_user")->references("id")->on("users");
+
+            $table->foreignId("id_user")->constrained("users")->onDelete("cascade");
 
             $table->string("name");
             $table->string("description");
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('collection');
+        Schema::dropIfExists('collections');
     }
 };

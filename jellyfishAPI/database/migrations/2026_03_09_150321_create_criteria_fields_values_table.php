@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('criteria_fields_values', function (Blueprint $table) {
             $table->id();
-            $table->integer('id_jellyfish');
-            $table->foreign("id_jellyfish")->references("id")->on("jellyfishes");
+
+            $table->foreignId('id_jellyfish')->constrained('jellyfishes')->onDelete('cascade');
             
-            $table->integer("id_criteria_fields");
-            $table->foreign("id_criteria_fields")->references("id")->on("criteria_fields");
+            $table->foreignId("id_criteria_fields")->constrained("criteria_fields")->onDelete("cascade");
 
             $table->integer("value");
         });

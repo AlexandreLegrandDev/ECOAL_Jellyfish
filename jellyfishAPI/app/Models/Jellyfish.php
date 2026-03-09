@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Jellyfishes extends Model
+class Jellyfish extends Model
 {
     public $timestamps = false;
 
     protected $guarded = [];
+    use HasFactory;
+
 }

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('jellyfishes', function (Blueprint $table) {
             $table->id();
-            $table->integer("id_user");
-            $table->foreign('id_user')->references("id_user")->on("collection");
+
+            $table->foreignId("id_collection")->constrained("collections")->onDelete("cascade");
 
             $table->string("name");
             $table->string('img');

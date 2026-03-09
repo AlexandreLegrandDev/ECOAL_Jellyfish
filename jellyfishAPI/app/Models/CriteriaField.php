@@ -4,18 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Location extends Model
+class CriteriaField extends Model
 {
     public $timestamps = false;
 
     protected $guarded = [];
     use HasFactory;
 
-    public function jellyfish() : BelongsTo
+    public function values() : HasMany
     {
-        return $this->belongsTo(Jellyfish::class, 'id_jellyfish');
+        return $this->hasMany(CriteriaFieldValue::class, 'id_criteria_fields');
     }
 
 }

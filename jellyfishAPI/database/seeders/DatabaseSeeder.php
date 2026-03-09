@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Collection;
-use App\Models\CriteriaFields;
-use App\Models\CriteriaFieldsValues;
+use App\Models\CriteriaField;
+use App\Models\CriteriaFieldValue;
 use App\Models\Jellyfish;
 use App\Models\Location;
 use App\Models\User;
@@ -36,113 +36,113 @@ class DatabaseSeeder extends Seeder
 
         ]);
 
-        CriteriaFields::factory()->create([
+        CriteriaField::factory()->create([
             'name' => 'Size',
         ]);
 
-        CriteriaFields::factory()->create([
+        CriteriaField::factory()->create([
             'name' => 'Diameter',
         ]);
 
-        CriteriaFields::factory()->create([
+        CriteriaField::factory()->create([
             'name' => 'Bioluminescent',
         ]);
 
-        CriteriaFields::factory()->create([
+        CriteriaField::factory()->create([
             'name' => 'Dangerosity',
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 1,
             'id_criteria_fields' => 1,
             'value' => 10,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 1,
             'id_criteria_fields' => 2,
             'value' => 25,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 1,
             'id_criteria_fields' => 3,
             'value' => 0,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 1,
             'id_criteria_fields' => 4,
             'value' => 1,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 2,
             'id_criteria_fields' => 1,
             'value' => 300,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 2,
             'id_criteria_fields' => 2,
             'value' => 30,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 2,
             'id_criteria_fields' => 3,
             'value' => 0,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 2,
             'id_criteria_fields' => 4,
             'value' => 10,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 3,
             'id_criteria_fields' => 1,
             'value' => 20,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 3,
             'id_criteria_fields' => 2,
             'value' => 15,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 3,
             'id_criteria_fields' => 3,
             'value' => 1,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 3,
             'id_criteria_fields' => 4,
             'value' => 3,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 4,
             'id_criteria_fields' => 1,
             'value' => 3500,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 4,
             'id_criteria_fields' => 2,
             'value' => 200,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 4,
             'id_criteria_fields' => 3,
             'value' => 0,
         ]);
 
-        CriteriaFieldsValues::factory()->create([
+        CriteriaFieldValue::factory()->create([
             'id_jellyfish' => 4,
             'id_criteria_fields' => 4,
             'value' => 7,

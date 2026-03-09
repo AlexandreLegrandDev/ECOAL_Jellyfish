@@ -5,22 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Collection extends Model
+class CriteriaFieldValue extends Model
 {
     public $timestamps = false;
 
     protected $guarded = [];
     use HasFactory;
 
-    public function user() : BelongsTo
+    public function jellyfish() : BelongsTo
     {
-        return $this->belongsTo(User::class, 'id_user');
+        return $this->belongsTo(Jellyfish::class, 'id_jellyfish');
     }
 
-    public function jellyfishes() : HasMany
+    public function criteriaField() : BelongsTo
     {
-        return $this->hasMany(Jellyfish::class, 'id_collection');
+        return $this->belongsTo(CriteriaField::class, 'id_criteria_fields');
     }
 }

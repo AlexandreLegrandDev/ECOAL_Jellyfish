@@ -2,12 +2,17 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import User from './components/user'
+<script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+
+
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
     <>
+      <User />
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />

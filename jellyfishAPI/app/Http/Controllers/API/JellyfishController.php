@@ -13,7 +13,7 @@ class JellyfishController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])->get());
     }
 
     /**
@@ -21,7 +21,8 @@ class JellyfishController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $jellyfish = Jellyfish::create($request->all());
+        return response()->json($jellyfish, 201);
     }
 
     /**
@@ -29,7 +30,7 @@ class JellyfishController extends Controller
      */
     public function show(Jellyfish $jellyfish)
     {
-        //
+        return response()->json($jellyfish->load(['collection', 'location', 'criteriaValues.criteriaField']));
     }
 
     /**
@@ -37,7 +38,8 @@ class JellyfishController extends Controller
      */
     public function update(Request $request, Jellyfish $jellyfish)
     {
-        //
+        $jellyfish->update($request->all());
+        return response()->json($jellyfish);
     }
 
     /**
@@ -45,6 +47,7 @@ class JellyfishController extends Controller
      */
     public function destroy(Jellyfish $jellyfish)
     {
-        //
+        $jellyfish->delete();
+        return response()->json(null, 204);
     }
 }

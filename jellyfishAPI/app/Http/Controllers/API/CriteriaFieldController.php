@@ -13,7 +13,7 @@ class CriteriaFieldController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(CriteriaField::with('values')->get());
     }
 
     /**
@@ -21,7 +21,8 @@ class CriteriaFieldController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $criteriaField = CriteriaField::create($request->all());
+        return response()->json($criteriaField, 201);
     }
 
     /**
@@ -29,7 +30,7 @@ class CriteriaFieldController extends Controller
      */
     public function show(CriteriaField $criteriaField)
     {
-        //
+        return response()->json($criteriaField->load('values'));
     }
 
     /**
@@ -37,7 +38,8 @@ class CriteriaFieldController extends Controller
      */
     public function update(Request $request, CriteriaField $criteriaField)
     {
-        //
+        $criteriaField->update($request->all());
+        return response()->json($criteriaField);
     }
 
     /**
@@ -45,6 +47,7 @@ class CriteriaFieldController extends Controller
      */
     public function destroy(CriteriaField $criteriaField)
     {
-        //
+        $criteriaField->delete();
+        return response()->json(null, 204);
     }
 }

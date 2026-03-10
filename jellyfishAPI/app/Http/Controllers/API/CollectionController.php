@@ -21,7 +21,16 @@ class CollectionController extends Controller
      */
     public function store(Request $request)
     {
-        $collection = Collection::create($request->all());
+        $validated = $request->validate([
+            'id_user' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'img' => 'required|string',
+            'status' => 'required|boolean'
+        ]);
+
+        $collection = Collection::create($validated);
+
         return response()->json($collection, 201);
     }
 
@@ -38,7 +47,15 @@ class CollectionController extends Controller
      */
     public function update(Request $request, Collection $collection)
     {
-        $collection->update($request->all());
+        $validated = $request->validate([
+            'name' => 'string|max:255',
+            'description' => 'string',
+            'img' => 'string',
+            'status' => 'boolean'
+        ]);
+
+        $collection->update($validated);
+
         return response()->json($collection);
     }
 
@@ -48,6 +65,8 @@ class CollectionController extends Controller
     public function destroy(Collection $collection)
     {
         $collection->delete();
+
         return response()->json(null, 204);
+
     }
 }

@@ -49,6 +49,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function collections() : HasMany
+    {
+        return $this->hasMany(Collection::class, 'id_user');
+    }
+
     // public function collection()
     // {
     //     return $this->hasOne(Collection::class, 'id_user');

@@ -28,6 +28,12 @@ class JellyfishController extends Controller
             'depth' => 'required|integer|min:1|max:5'
         ]);
 
+        // Check if the collection belongs to the authenticated user
+        // $collection = \App\Models\Collection::find($validated['id_collection']);
+        // if ($collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
         $jellyfish = Jellyfish::create($validated);
 
         return response()->json($jellyfish, 201);
@@ -46,11 +52,15 @@ class JellyfishController extends Controller
      */
     public function update(Request $request, Jellyfish $jellyfish)
     {
+        // Check if the jellyfish's collection belongs to the authenticated user
+        // if ($jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         $validated = $request->validate([
             'name' => 'string|max:255',
             'img' => 'string',
-            'depth' => 'integer|min:0|max:5'
+            'depth' => 'integer|min:1|max:5'
         ]);
 
         $jellyfish->update($validated);
@@ -63,6 +73,11 @@ class JellyfishController extends Controller
      */
     public function destroy(Jellyfish $jellyfish)
     {
+        // Check if the jellyfish's collection belongs to the authenticated user
+        // if ($jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
         $jellyfish->delete();
 
         return response()->json(null, 204);

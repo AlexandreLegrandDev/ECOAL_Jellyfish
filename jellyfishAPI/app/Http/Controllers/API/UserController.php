@@ -61,4 +61,10 @@ class UserController extends Controller
         $user->delete();
         return response()->json(null, 204);
     }
+
+    public function getUsersCollections(User $user) {
+        $collections = $user->collection()->get();
+
+        return response()->json($collections);
+    }
 }

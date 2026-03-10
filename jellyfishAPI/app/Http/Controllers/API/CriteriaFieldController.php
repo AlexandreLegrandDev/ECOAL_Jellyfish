@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\CriteriaField;
+use App\Models\CriteriaFieldValue;
 use Illuminate\Http\Request;
 
 class CriteriaFieldController extends Controller
@@ -58,6 +59,53 @@ class CriteriaFieldController extends Controller
     public function destroy(CriteriaField $criteriafield)
     {
         $criteriafield->delete();
+        return response()->json(null, 204);
+    }
+
+    public function storeValue(Request $request)
+    {
+        $validated = $request->validate([
+            'id_jellyfish' => 'required|exists:jellyfishes,id',
+            'id_criteria_fields' => 'required|exists:criteria_fields,id',
+            'value' => 'required|integer'
+        ]);
+
+        // Check if the jellyfish belongs to the authenticated user
+        // $jellyfish = Jellyfish::find($validated['id_jellyfish']);
+        // if ($jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
+        $criteriaValue = CriteriaFieldValue::create($validated);
+
+        return response()->json($criteriaValue, 201);
+    }
+
+    public function updateValue(Request $request, CriteriaFieldValue $criteriaFieldValue)
+    {
+        // Check if the jellyfish belongs to the authenticated user
+        // if ($criteriaFieldValue->jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
+        $validated = $request->validate([
+            'value' => 'required|integer'
+        ]);
+
+        $criteriaFieldValue->update($validated);
+
+        return response()->json($criteriaFieldValue);
+    }
+
+    public function destroyValue(CriteriaFieldValue $criteriaFieldValue)
+    {
+        // Check if the jellyfish belongs to the authenticated user
+        // if ($criteriaFieldValue->jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
+        $criteriaFieldValue->delete();
+
         return response()->json(null, 204);
     }
 }

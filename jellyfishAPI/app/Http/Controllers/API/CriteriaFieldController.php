@@ -21,33 +21,43 @@ class CriteriaFieldController extends Controller
      */
     public function store(Request $request)
     {
-        $criteriaField = CriteriaField::create($request->all());
-        return response()->json($criteriaField, 201);
+         $validated = $request->validate([
+            'name' => 'required|string|unique:criteria_fields|max:255'
+        ]);
+
+        $criteria = CriteriaField::create($validated);
+
+        return response()->json($criteria, 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(CriteriaField $criteriaField)
+    public function show(CriteriaField $criteriafield)
     {
-        return response()->json($criteriaField->load('values'));
+        return response()->json($criteriafield->load('values'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CriteriaField $criteriaField)
+    public function update(Request $request, CriteriaField $criteriafield)
     {
-        $criteriaField->update($request->all());
-        return response()->json($criteriaField);
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255|unique:criteria_fields,name,' . $criteriafield->id
+        ]);
+        
+        $criteriafield->update($validated);
+
+        return response()->json($criteriafield);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CriteriaField $criteriaField)
+    public function destroy(CriteriaField $criteriafield)
     {
-        $criteriaField->delete();
+        $criteriafield->delete();
         return response()->json(null, 204);
     }
 }

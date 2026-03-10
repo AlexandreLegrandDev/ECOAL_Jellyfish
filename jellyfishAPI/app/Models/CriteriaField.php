@@ -10,7 +10,10 @@ class CriteriaField extends Model
 {
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name'
+    ];
+
     use HasFactory;
 
     public function values() : HasMany

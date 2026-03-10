@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Header from './Header';
 import heroImage from './assets/images/hero_jellyfish.png';
 import cardImage from './assets/images/moon_jellyfish_card.png';
@@ -47,9 +48,11 @@ const Home = () => {
         </div>
 
         <div className="flex justify-center mb-16">
-          <button className="px-12 py-4 text-lg font-bold text-white transition-all rounded-full bg-gradient-to-r from-accent-blue to-accent-purple shadow-[0_10px_25px_rgba(28,95,209,0.3)] hover:scale-105 hover:shadow-[0_15px_30px_rgba(174,48,208,0.4)]">
-            See more
-          </button>
+          <Link to="/Collection">
+            <button className="px-12 py-4 text-lg font-bold text-white transition-all rounded-full bg-gradient-to-r from-accent-blue to-accent-purple shadow-[0_10px_25px_rgba(28,95,209,0.3)] hover:scale-105 hover:shadow-[0_15px_30px_rgba(174,48,208,0.4)]">
+              See more
+            </button>
+          </Link>
         </div>
 
         {/* Wave Decoration */}

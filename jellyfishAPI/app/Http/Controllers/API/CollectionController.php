@@ -13,7 +13,7 @@ class CollectionController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Collection::with(['user', 'jellyfishes'])->get());
     }
 
     /**
@@ -21,7 +21,8 @@ class CollectionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $collection = Collection::create($request->all());
+        return response()->json($collection, 201);
     }
 
     /**
@@ -29,7 +30,7 @@ class CollectionController extends Controller
      */
     public function show(Collection $collection)
     {
-        //
+        return response()->json($collection->load(['user', 'jellyfishes']));
     }
 
     /**
@@ -37,7 +38,8 @@ class CollectionController extends Controller
      */
     public function update(Request $request, Collection $collection)
     {
-        //
+        $collection->update($request->all());
+        return response()->json($collection);
     }
 
     /**
@@ -45,6 +47,7 @@ class CollectionController extends Controller
      */
     public function destroy(Collection $collection)
     {
-        //
+        $collection->delete();
+        return response()->json(null, 204);
     }
 }

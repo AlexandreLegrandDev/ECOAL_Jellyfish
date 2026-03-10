@@ -21,3 +21,4 @@ Route::apiResource("jellyfish", JellyfishController::class);
 Route::apiResource("location", LocationController::class);
 
 Route::apiResource("user", UserController::class);
+

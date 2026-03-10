@@ -1,15 +1,7 @@
 @import "tailwindcss";
 
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  background-color: black;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+@theme {
+  --color-blue-50: oklch(61.58% 0.207 255.61);
+  --color-blue-100: oklch(28.18% 0.162 267.92);
+  --color-purple-200: oklch(70.78% 0.291 325.78);
 }

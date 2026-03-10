@@ -11,14 +11,13 @@ export default function SignIn() {
     const videoRef = useRef(null)
 
     useEffect(() => {
-        if (videoRef.current) {
-            const playPromise = videoRef.current.play()
-
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    console.log("Autoplay bloqué par le navigateur")
-                })
-            }
+        const video = videoRef.current
+        if (video) {
+            video.defaultMuted = true
+            video.muted = true
+            video.play().catch((err) => {
+                console.log("Autoplay bloqué par le navigateur :", err)
+            })
         }
     }, [])
 
@@ -82,7 +81,7 @@ export default function SignIn() {
     )
 
     return (
-        <div className="flex items-center justify-center h-screen w-screen bg-blue-900 p-[2vh] sm:p-[2vw] overflow-hidden">
+        <div className="flex items-center justify-center h-screen w-screen bg-blue-100 p-[2vh] sm:p-[2vw] overflow-hidden">
 
             <div className="relative w-full h-full rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border border-gray-800 font-sans flex items-center justify-center">
 
@@ -90,15 +89,18 @@ export default function SignIn() {
 
                 <video
                     ref={videoRef}
+                    src={videoBg}
                     autoPlay
                     loop
                     muted
                     playsInline
-                    preload="auto"
                     className="absolute inset-0 w-full h-full object-cover z-0"
-                >
-                    <source src={videoBg} type="video/mp4" />
-                </video>
+                    onLoadedData={(e) => {
+                        e.target.defaultMuted = true
+                        e.target.muted = true
+                        e.target.play().catch(console.error)
+                    }}
+                />
 
                 {/* OVERLAY */}
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/images/logo.png';
@@ -10,21 +10,46 @@ const PRICE_FILTERS = [
     { label: '200 +', value: '200+' },
 ];
 
-const items = Array.from({ length: 8 }, (_, i) => ({
-    id: i + 1,
-    name: `Moon Jellyfish #${i + 1}`,
-    price: [80, 150, 220, 95, 175, 310, 60, 130][i],
-    image: cardImage,
-    // Add a pseudo-random height between 150px and 280px to simulate masonry effect 
-    height: [220, 180, 260, 160, 240, 280, 200, 170][i]
-}));
-
 const Collection = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const isMine = searchParams.get('mine') === 'true';
     const [activeFilter, setActiveFilter] = useState(null);
     const [search, setSearch] = useState('');
+    const [items, setItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+
+        const fetchJellyfishes = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/api/jellyfish');
+                if (!response.ok) throw new Error('Failed to load');
+                const data = await response.json();
+
+                const heights = [220, 180, 260, 160, 240, 280, 200, 170];
+                const formattedItems = data.map((j, i) => {
+                    const imgUrl = j.img ? (j.img.startsWith('http') ? j.img : `http://localhost:8000/storage/${j.img}`) : cardImage;
+                    return {
+                        id: j.id,
+                        name: j.name,
+                        image: imgUrl,
+                        price: j.depth || 0, // Mapping depth to the price filter logic
+                        height: heights[i % heights.length]
+                    };
+                });
+
+                setItems(formattedItems);
+            } catch (error) {
+                console.error("Error fetching jellyfishes:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchJellyfishes();
+    }, []);
 
     const filteredItems = items.filter((item) => {
         const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
@@ -113,6 +138,7 @@ const Collection = () => {
                                     <img
                                         src={item.image}
                                         alt={item.name}
+                                        onError={(e) => { e.target.src = cardImage; }}
                                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
                                 </div>
@@ -124,7 +150,17 @@ const Collection = () => {
                     </AnimatePresence>
                 </motion.div>
 
-                {filteredItems.length === 0 && (
+                {isLoading && items.length === 0 && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-20 text-white/40"
+                    >
+                        <p className="text-sm">Loading...</p>
+                    </motion.div>
+                )}
+
+                {!isLoading && filteredItems.length === 0 && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

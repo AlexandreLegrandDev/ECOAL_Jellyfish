@@ -13,7 +13,13 @@ class JellyfishController extends Controller
      */
     public function index()
     {
-        return response()->json(Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])->get());
+        $jellyfishes = Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])
+            ->whereHas('collection', function ($query) {
+                $query->where('status', 0);
+            })
+            ->get();
+
+        return response()->json($jellyfishes);
     }
 
     /**

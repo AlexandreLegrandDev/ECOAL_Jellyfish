@@ -13,7 +13,13 @@ class JellyfishController extends Controller
      */
     public function index()
     {
-        return response()->json(Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])->get());
+        $jellyfishes = Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])
+            ->whereHas('collection', function ($query) {
+                $query->where('status', 0);
+            })
+            ->get();
+
+        return response()->json($jellyfishes);
     }
 
     /**
@@ -21,7 +27,21 @@ class JellyfishController extends Controller
      */
     public function store(Request $request)
     {
-        $jellyfish = Jellyfish::create($request->all());
+        $validated = $request->validate([
+            'id_collection' => 'required|exists:collections,id',
+            'name' => 'required|string|max:255',
+            'img' => 'required|string',
+            'depth' => 'required|integer|min:1|max:5'
+        ]);
+
+        // Check if the collection belongs to the authenticated user
+        // $collection = \App\Models\Collection::find($validated['id_collection']);
+        // if ($collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
+        $jellyfish = Jellyfish::create($validated);
+
         return response()->json($jellyfish, 201);
     }
 
@@ -38,7 +58,19 @@ class JellyfishController extends Controller
      */
     public function update(Request $request, Jellyfish $jellyfish)
     {
-        $jellyfish->update($request->all());
+        // Check if the jellyfish's collection belongs to the authenticated user
+        // if ($jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
+        $validated = $request->validate([
+            'name' => 'string|max:255',
+            'img' => 'string',
+            'depth' => 'integer|min:1|max:5'
+        ]);
+
+        $jellyfish->update($validated);
+
         return response()->json($jellyfish);
     }
 
@@ -47,7 +79,13 @@ class JellyfishController extends Controller
      */
     public function destroy(Jellyfish $jellyfish)
     {
+        // Check if the jellyfish's collection belongs to the authenticated user
+        // if ($jellyfish->collection->id_user !== auth()->id()) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
+
         $jellyfish->delete();
+
         return response()->json(null, 204);
     }
 }

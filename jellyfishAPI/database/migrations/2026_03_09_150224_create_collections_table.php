@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId("id_user")->constrained("users")->onDelete("cascade");
+            $table->foreignId("id_user")->constrained("users")->onDelete("cascade")->unique();
 
             $table->string("name");
             $table->string("description");

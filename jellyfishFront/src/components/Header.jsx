@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import {ArrowLeft, Menu, X} from "lucide-react";
 import Button from "./button.jsx";
+import { useAuth } from "../contexts/auth-context.jsx";
 
 const Header = ({title, returnTo = "/"}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { token, logout } = useAuth();
+    const isLoggedIn = !!token;
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -70,14 +72,20 @@ const Header = ({title, returnTo = "/"}) => {
                             <button
                                 className="w-full text-white text-sm py-2 px-4 rounded-full transition-opacity hover:opacity-80"
                                 style={{ border: '1px solid rgba(0, 129, 253, 0.6)', background: 'transparent' }}
-                                onClick={() => {}}
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    navigate("/account");
+                                }}
                             >
-                                A minha conta
+                                Account
                             </button>
                             <button
                                 className="w-full text-white text-sm py-2 px-4 rounded-full transition-opacity hover:opacity-80"
                                 style={{ background: 'linear-gradient(to right, #a855f7, #0081FD)' }}
-                                onClick={() => setIsLoggedIn(false)}
+                                onClick={() => {
+                                    setIsMenuOpen(false);
+                                    logout();
+                                }}
                             >
                                 Logout
                             </button>

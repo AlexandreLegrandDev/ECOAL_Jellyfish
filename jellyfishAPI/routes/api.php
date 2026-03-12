@@ -13,6 +13,11 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+// convenience route that returns the currently authenticated user
+Route::middleware('auth:sanctum')->get('/user/me', function (Illuminate\Http\Request $request) {
+    return response()->json($request->user());
+});
+
 // Public routes (GET)
 Route::get('/collection', [CollectionController::class, 'index']);
 Route::get('/collection/{collection}', [CollectionController::class, 'show']);

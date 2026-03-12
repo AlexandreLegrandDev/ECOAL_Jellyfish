@@ -1,0 +1,58 @@
+footer{
+    position: relative;
+    height: 150px;
+    padding: 0;
+}
+
+.wave {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: #c51ddf5e;
+    animation: wave 6s ease-in-out infinite;
+    z-index: 999;
+}
+
+.wave1 { 
+    animation-duration: 6s; 
+    opacity: 0.7; 
+    height: 250px;
+}
+
+.wave2 { 
+    animation-duration: 8s; 
+    opacity: 0.5; 
+    height: 150px; 
+}
+
+.wave3 { 
+    animation-duration: 10s; 
+    opacity: 0.3; 
+    height: 300px;
+}
+
+@keyframes wave {
+    0%, 100% {
+        clip-path: polygon(
+            0% 100%, 
+            0% 50%, 
+            25% 55%, 
+            50% 50%, 
+            75% 55%, 
+            100% 50%, 
+            100% 100%
+        );
+    }
+
+    50% {
+        clip-path: polygon(
+            0% 100%, 
+            0% 60%, 
+            25% 50%, 
+            50% 60%, 
+            75% 50%, 
+            100% 60%, 
+            100% 100%
+        );
+    }
+}

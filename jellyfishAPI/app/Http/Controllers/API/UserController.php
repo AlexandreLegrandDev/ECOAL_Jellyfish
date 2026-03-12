@@ -38,6 +38,11 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // only allow users to update their own profile
+        if ($user->id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $user->id,

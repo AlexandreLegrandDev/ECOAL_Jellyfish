@@ -22,7 +22,7 @@ function BackgroundAnimation({ children }) {
                 <source src="/background-animation.mp4" type="video/mp4" />
             </video>
 
-            <div className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto bg-black/70">
+            <div className="relative z-10 w-full min-h-dvh flex flex-col gap-12 overflow-y-auto bg-black/70">
                 {children}
             </div>
         </div>

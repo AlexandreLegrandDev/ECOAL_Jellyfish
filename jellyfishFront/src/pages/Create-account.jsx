@@ -6,7 +6,7 @@ import BackgroundAnimation from "../components/background-animation.jsx";
 import Toast from "../components/toast-message.jsx";
 
 function Register() {
-    const {register} = useAuth();
+    const {register, showNotification} = useAuth();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -21,6 +21,7 @@ function Register() {
 
         if (password !== passwordConfirmation) {
             setError("As passwords não coincidem");
+            showNotification("As passwords não coincidem", "error");
 
             setTimeout(() => {
                 setError(null);
@@ -34,6 +35,7 @@ function Register() {
 
         try {
             await register(name, email, password);
+            showNotification("Conta criada com sucesso!", "success");
         } catch (err) {
             setError(err.message);
 
@@ -136,7 +138,7 @@ function Register() {
                         </button>
                     </form>
 
-                    <div className="w-full flex flex-col items-center mt-12">
+                    <div className="w-full flex flex-col items-center mt-12 mb-5">
                         <p>Already have an account? <Link to="/login" className="text-[#0081FD] hover:underline">Sign
                             in</Link></p>
                     </div>

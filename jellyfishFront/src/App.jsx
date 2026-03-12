@@ -8,6 +8,7 @@ import Account from './pages/Account.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Create-account.jsx';
 import CreateJelly from './pages/CreateJelly.jsx';
+import EditProfile from "./pages/EditProfile.jsx";
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                     <Route path="/create-account" element={<Register/>}/>
                     <Route path="/account" element={<Account/>}/>
                     <Route path="/create-jelly" element={<CreateJelly/>}/>
+                    <Route path="/edit-profile" element={<EditProfile/>}/>
 
                     {/* Rotas Protegidas */}
                     {/*<Route path="/account" element={

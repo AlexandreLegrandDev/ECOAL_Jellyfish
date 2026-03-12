@@ -131,7 +131,7 @@ const Collection = () => {
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 transition={{ duration: 0.3 }}
                                 key={item.id}
-                                onClick={() => navigate(`/item/${item.id}`)}
+                                onClick={() => navigate(`/collection/${item.id}`)}
                                 className="group flex flex-col overflow-hidden rounded-2xl border border-accent-purple/40 bg-white/5 shadow-[0_0_15px_rgba(174,48,208,0.2)] hover:shadow-[0_0_25px_rgba(174,48,208,0.5)] hover:border-accent-purple hover:-translate-y-1 cursor-pointer break-inside-avoid"
                             >
                                 <div className="w-full relative overflow-hidden" style={{ height: item.height }}>

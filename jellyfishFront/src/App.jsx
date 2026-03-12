@@ -5,6 +5,7 @@ import ItemDetail from './pages/ItemDetail'
 
 function App() {
   return (
+<<<<<<< HEAD
     <div className="w-full">
       <Routes>
         <Route path="/" element={<Home />} />
@@ -16,3 +17,11 @@ function App() {
 }
 
 export default App
+=======
+    <>
+      {/* <User /> */}
+      <SignIn />
+    </>
+  );
+}
+>>>>>>> mateo

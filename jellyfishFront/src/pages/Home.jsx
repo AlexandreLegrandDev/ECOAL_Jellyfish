@@ -4,7 +4,7 @@ import Header from '../components/Header.jsx';
 import cardImage from '../assets/images/moon_jellyfish_card.png';
 import BackgroundAnimation from "../components/background-animation.jsx";
 import Button from "../components/button.jsx";
-import Waves from "../components/waves";
+import Waves from "../components/waves.jsx"
 import Video from "../components/Video.jsx";
 
 const Home = () => {

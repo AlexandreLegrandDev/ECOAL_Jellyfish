@@ -96,7 +96,6 @@ const ItemDetail = () => {
 
     const size = getCriteria('Size');
     const diameter = getCriteria('Diameter');
-    const color = getCriteria('Color');
     const dangerValue = parseInt(getCriteria('Dangerosity')) || 1;
     const isBioluminescent = getCriteria('Bioluminescent') === 1 ? 'Yes' : (getCriteria('Bioluminescent') === 0 ? 'No' : 'N/A');
 
@@ -145,7 +144,6 @@ const ItemDetail = () => {
                         <ul className="space-y-2.5 text-[0.95rem]">
                             <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Size :</strong> <span className="text-white/80 ml-1.5">{size !== 'N/A' ? `${size} cm` : size}</span></li>
                             <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Depth Level :</strong> <span className="text-white/80 ml-1.5">{item.depth}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Color :</strong> <span className="text-white/80 ml-1.5">{color}</span></li>
                             <li className="flex items-center">
                                 <JellyfishIcon />
                                 <strong className="text-white">Danger :</strong>
@@ -159,13 +157,6 @@ const ItemDetail = () => {
                             <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Light :</strong> <span className="text-white/80 ml-1.5">{isBioluminescent}</span></li>
                         </ul>
 
-                        {/* Description */}
-                        <div className="mt-6">
-                            <h3 className="font-bold text-white mb-1"><strong className="text-white">Description :</strong></h3>
-                            <p className="text-white/80 text-sm leading-relaxed">
-                                {item.collection?.description || "No description provided."}
-                            </p>
-                        </div>
                     </div>
                 </div>
 

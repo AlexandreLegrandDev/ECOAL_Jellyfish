@@ -15,7 +15,7 @@ class JellyfishController extends Controller
     {
         $jellyfishes = Jellyfish::with(['collection', 'location', 'criteriaValues.criteriaField'])
             ->whereHas('collection', function ($query) {
-                $query->where('status', 0);
+                $query->where('status', 0)->orderBy('depth', 'ASC');
             })
             ->get();
 

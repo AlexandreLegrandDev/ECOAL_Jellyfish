@@ -88,7 +88,7 @@ function Login() {
                         </button>
                     </form>
 
-                    <div className="w-full flex flex-col items-center">
+                    <div className="w-full flex flex-col items-center mb-5">
                         <p>Don't have an account? <Link to="/create-account" className="text-[#0081FD] hover:underline">Sign up</Link></p>
                     </div>
                 </div>

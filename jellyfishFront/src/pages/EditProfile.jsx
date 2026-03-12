@@ -11,7 +11,7 @@ const EditProfile = () => {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        avatar: "/jelly.svg",
+        avatar: "", // will be populated on effect from user or fallback
     });
     const [avatarFile, setAvatarFile] = useState(null);
 
@@ -64,37 +64,37 @@ const EditProfile = () => {
         setLoading(true);
         setError(null);
 
-        // determine user id from context object
+        // need the id of the authenticated user
         const currentUser = user?.data || user?.user || user;
         const userId = currentUser?.id;
         if (!userId) {
-            setError("Impossible de déterminer l'utilisateur connecté");
+            setError("Cannot identify current user");
             setLoading(false);
             return;
         }
 
         try {
-            // form payload can include file
             let body;
             let headers = { Authorization: `Bearer ${token}` };
 
             if (avatarFile) {
                 body = new FormData();
-                body.append('name', formData.name);
-                body.append('email', formData.email);
-                body.append('avatar', avatarFile);
+                body.append('_method', 'PUT'); // Laravel doesn't parse files on real PUT
+                body.append("name", formData.name);
+                body.append("email", formData.email);
+                body.append("avatar", avatarFile);
             } else {
-                body = JSON.stringify(formData);
-                headers['Content-Type'] = 'application/json';
+                body = JSON.stringify({
+                    name: formData.name,
+                    email: formData.email
+                });
+                headers["Content-Type"] = "application/json";
             }
 
-            const response = await fetch("http://localhost:8000/api/user", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
+            const response = await fetch(`http://localhost:8000/api/user/${userId}`, {
+                method: avatarFile ? "POST" : "PUT",
+                headers: headers,
+                body: body,
             });
 
             const data = await response.json();
@@ -147,7 +147,7 @@ const EditProfile = () => {
                         src={formData.avatar}
                         alt="User Avatar"
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.target.src = "/jelly.svg" }}
+                        onError={(e) => { e.target.src = user?.avatar || "/jelly.svg" }}
                     />
                     {/* Subtle Overlay to indicate it's clickable */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">

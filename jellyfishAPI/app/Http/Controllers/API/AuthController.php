@@ -21,6 +21,7 @@ class AuthController extends Controller
                         'name' => $validatedData['name'],
                         'email' => $validatedData['email'],
                         'password' => Hash::make($validatedData['password']),
+                        'avatar' => "/jelly.svg"
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;

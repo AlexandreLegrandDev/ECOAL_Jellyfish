@@ -14,9 +14,10 @@ function Account() {
     // Since we mock the API response for visual purposes,
     // we can skip the fetch for now if we just want to show the UI
     useEffect(() => {
-        // Mocking user profile
+        // use actual avatar stored on user object
         setProfile({
-            name: user?.name || "User", avatar: "/jelly.svg" // Guest logo as requested
+            name: user?.name || "User",
+            avatar: user?.avatar || "/jelly.svg"
         });
     }, [user]);
 
@@ -98,6 +99,7 @@ function Account() {
                     alt="User Avatar"
                     className="w-full h-48 object-cover"
                 />
+                {console.log(profile?.avatar)}
             </div>
 
             {/* "your collection" section */}

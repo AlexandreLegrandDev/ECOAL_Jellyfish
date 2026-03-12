@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('collection')->get()->map(function($u){
-            if ($u->avatar) {
+            if ($u->avatar && !\Illuminate\Support\Str::startsWith($u->avatar, ['http://','https://'])) {
                 $u->avatar = url("/storage/{$u->avatar}");
             }
             return $u;
@@ -37,7 +37,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load('collection');
-        if ($user->avatar) {
+        if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://','https://'])) {
             $user->avatar = url("/storage/{$user->avatar}");
         }
         return response()->json($user);
@@ -50,7 +50,32 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        $user->update($request->only(['name','email','avatar']));
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'avatar' => 'nullable|image|max:2048'
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            // strip domain if accidentally stored
+            $path = preg_replace('#^https?://[^/]+/storage/#', '', $path);
+            $user->avatar = $path;
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        $user->save();
+
+        // prepare avatar url for response
+        if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://','https://'])) {
+            $user->avatar = url("/storage/{$user->avatar}");
+        }
 
         return response()->json($user);
     }

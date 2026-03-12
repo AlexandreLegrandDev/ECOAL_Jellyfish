@@ -13,7 +13,7 @@ class LocationController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Location::with('jellyfish')->get());
     }
 
     /**
@@ -21,7 +21,15 @@ class LocationController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'id_jellyfish' => 'required|exists:jellyfishes,id',
+            'lat' => 'required|numeric|between:-90,90',
+            'long' => 'required|numeric|between:-180,180'
+        ]);
+
+        $location = Location::create($validated);
+
+        return response()->json($location, 201);
     }
 
     /**
@@ -29,7 +37,7 @@ class LocationController extends Controller
      */
     public function show(Location $location)
     {
-        //
+        return response()->json($location->load('jellyfish'));
     }
 
     /**
@@ -37,7 +45,14 @@ class LocationController extends Controller
      */
     public function update(Request $request, Location $location)
     {
-        //
+        $validated = $request->validate([
+            'lat' => 'numeric',
+            'long' => 'numeric'
+        ]);
+
+        $location->update($validated);
+
+        return response()->json($location);
     }
 
     /**
@@ -45,6 +60,7 @@ class LocationController extends Controller
      */
     public function destroy(Location $location)
     {
-        //
+        $location->delete();
+        return response()->json(null, 204);
     }
 }

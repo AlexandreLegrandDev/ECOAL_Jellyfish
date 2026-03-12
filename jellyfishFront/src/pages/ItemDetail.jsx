@@ -1,8 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import heroImage from './assets/images/hero_jellyfish.png';
-import cardImage from './assets/images/moon_jellyfish_card.png';
+import heroImage from '../assets/images/hero_jellyfish.png';
+import cardImage from '../assets/images/moon_jellyfish_card.png';
 
 // Mock data (we can assume this would be fetched based on the ID)
 const jellyfishes = [

@@ -12,6 +12,7 @@ const Collection = () => {
     const [searchParams] = useSearchParams();
     const isMine = searchParams.get('mine') === 'true';
     const [selectedDepth, setSelectedDepth] = useState(200);
+    const [hoveredJelly, setHoveredJelly] = useState(null);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('jellys');
     const [jellyfishes, setJellyfishes] = useState([]);
@@ -59,13 +60,45 @@ const Collection = () => {
         }
     }, [selectedDepth, jellyfishes, collection, search, activeTab]);
 
-    const handleMeterClick = (e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
+    const [isDragging, setIsDragging] = useState(false);
+
+    const updateDepthFromPointer = (e, rect) => {
         const y = e.clientY - rect.top;
         const percentage = Math.max(0, Math.min(1, y / rect.height));
         const depth = Math.round(percentage * 1000);
         setSelectedDepth(depth);
     };
+
+    const handlePointerDown = (e) => {
+        setIsDragging(true);
+        const rect = e.currentTarget.getBoundingClientRect();
+        updateDepthFromPointer(e, rect);
+    };
+
+    useEffect(() => {
+        const handlePointerMove = (e) => {
+            if (!isDragging) return;
+            const container = document.getElementById('depth-meter-container');
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                updateDepthFromPointer(e, rect);
+            }
+        };
+
+        const handlePointerUp = () => {
+            setIsDragging(false);
+        };
+
+        if (isDragging) {
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+        }
+
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, [isDragging]);
 
     // Calculate background color based on depth
     const getDynamicBackground = () => {
@@ -86,9 +119,36 @@ const Collection = () => {
                 returnTo="/"
             />
 
+            {/* Spotlight Preview Overlay */}
+            <AnimatePresence>
+                {hoveredJelly && (
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
+                    >
+                        <div className="relative w-64 h-80 rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/20 backdrop-blur-xl bg-white/5 p-4 flex flex-col gap-4">
+                            <div className="w-full h-48 rounded-2xl overflow-hidden">
+                                <img src={hoveredJelly.img} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center flex-1">
+                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-2 text-center">Species Preview</span>
+                                <h3 className="text-xl font-black text-center text-white leading-tight px-2">
+                                    {hoveredJelly.name}
+                                </h3>
+                                <div className="mt-4 w-12 h-[2px] bg-accent-blue rounded-full shadow-[0_0_10px_#0081FD]" />
+                            </div>
+                            {/* Decorative background glow */}
+                            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent-blue/20 blur-[80px] rounded-full" />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="w-full h-[calc(115vh-240px)] flex flex-row gap-6 mb-30">
                 {activeTab === 'jellys' && (
-                    <div className="flex flex-col items-center h-full py-4 px-2">
+                    <div className="flex flex-col items-center h-full py-4 px-2 select-none">
                         {/* Digital Depth Readout at the top */}
                         <div className="mb-8 flex flex-col items-center animate-in fade-in duration-700">
                             <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] leading-none mb-2">Depth</span>
@@ -101,10 +161,11 @@ const Collection = () => {
                         </div>
 
                         <div
-                            className="relative w-12 flex-1 cursor-pointer flex flex-col items-center group"
-                            onClick={handleMeterClick}
+                            id="depth-meter-container"
+                            className="relative w-12 flex-1 cursor-ns-resize flex flex-col items-center group touch-none"
+                            onPointerDown={handlePointerDown}
                         >
-                            {/* Scale Markings - Technical Look (0-1000m) */}
+                            {/* Level Markings (1 - 9) */}
                             {Array.from({ length: 51 }).map((_, i) => (
                                 <div
                                     key={i}
@@ -130,6 +191,8 @@ const Collection = () => {
                                         key={`spoiler-${level}`}
                                         className="absolute right-8 -translate-y-1/2 flex flex-row-reverse items-center gap-2 cursor-help z-30"
                                         style={{ top: `${((level * 100 - 50) / 1000) * 100}%` }}
+                                        onMouseEnter={() => setHoveredJelly(firstJelly)}
+                                        onMouseLeave={() => setHoveredJelly(null)}
                                         whileHover="hover"
                                         initial="initial"
                                     >
@@ -137,7 +200,7 @@ const Collection = () => {
                                             className="relative w-5 h-5 rounded-full overflow-hidden border border-white/20 shadow-lg"
                                             variants={{
                                                 initial: { scale: 1, opacity: 0.3 },
-                                                hover: { scale: 2.2, opacity: 1, x: -10 }
+                                                hover: { scale: 1.8, opacity: 1, x: -5 }
                                             }}
                                         >
                                             <img src={firstJelly.img} alt="" className="w-full h-full object-cover" />
@@ -180,12 +243,7 @@ const Collection = () => {
 
                 <div className="flex-1 flex flex-col gap-4">
                     <div className="w-full flex flex-row gap-2 items-center">
-                        <div
-                            className="w-10 h-10 flex flex-row justify-center items-center rounded-full shrink-0"
-                            style={{ background: 'linear-gradient(to right, #0081FD, #074AD1)' }}
-                        >
-                            <Plus size={14} color="white" />
-                        </div>
+
 
                         <div
                             className="flex-1 flex flex-row items-center justify-between p-1 rounded-full"

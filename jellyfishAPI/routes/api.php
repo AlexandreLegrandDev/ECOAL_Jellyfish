@@ -33,8 +33,6 @@ Route::get('/jellyfish/{jellyfish}', [JellyfishController::class, 'show']);
 Route::get('/location', [LocationController::class, 'index']);
 Route::get('/location/{location}', [LocationController::class, 'show']);
 
-Route::apiResource("user", UserController::class);
-
 // Protected routes (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -60,5 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // USER
     Route::get("/user/{user}/collection", [UserController::class, 'getUsersCollections']);
+    Route::apiResource("user", UserController::class);
+    Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'update']);
 
 });

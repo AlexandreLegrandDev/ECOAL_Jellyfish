@@ -13,6 +13,7 @@ const EditProfile = () => {
         email: "",
         avatar: "/jelly.svg",
     });
+    const [avatarFile, setAvatarFile] = useState(null);
 
     // Update form when user data is available
     React.useEffect(() => {
@@ -45,6 +46,7 @@ const EditProfile = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData({ ...formData, avatar: reader.result });
@@ -62,17 +64,31 @@ const EditProfile = () => {
         setLoading(true);
         setError(null);
 
-        // resolve possibly wrapped user object (user.data, user.user, etc.)
+        // determine user id from context object
         const currentUser = user?.data || user?.user || user;
         const userId = currentUser?.id;
         if (!userId) {
-            setError("Impossible de déterminer l'utilisateur connecté.");
+            setError("Impossible de déterminer l'utilisateur connecté");
             setLoading(false);
             return;
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/api/user/${userId}`, {
+            // form payload can include file
+            let body;
+            let headers = { Authorization: `Bearer ${token}` };
+
+            if (avatarFile) {
+                body = new FormData();
+                body.append('name', formData.name);
+                body.append('email', formData.email);
+                body.append('avatar', avatarFile);
+            } else {
+                body = JSON.stringify(formData);
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const response = await fetch("http://localhost:8000/api/user", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -81,14 +97,14 @@ const EditProfile = () => {
                 body: JSON.stringify(formData),
             });
 
-            if (!response.ok) {
-                throw new Error("Failed to update profile");
-            }
+            const data = await response.json();
 
-            const updatedUser = await response.json();
-            setUser(updatedUser);
-            showNotification("Perfil atualizado com sucesso!", "success");
+            if (!response.ok) throw new Error(data.message || "Update failed");
+
+            setUser(data);
+            showNotification("Profile updated!", "success");
             navigate("/account");
+
         } catch (err) {
             setError(err.message);
             showNotification(err.message, "error");

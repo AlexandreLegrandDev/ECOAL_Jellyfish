@@ -16,7 +16,7 @@ const Header = ({title, returnTo = "/"}) => {
 
     return (
         <div className="relative">
-            <div className="relative w-full h-16 flex flex-row justify-between items-center p-4 rounded-full border border-[#0081FD]">
+            <div className="relative w-full h-16 flex flex-row justify-between items-center p-4 rounded-full border border-gradient">
                 <div className="absolute inset-0 bg-black opacity-50 rounded-full" />
 
                 {location.pathname === "/" ? (

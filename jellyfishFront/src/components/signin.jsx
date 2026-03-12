@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import videoBg from '../assets/video1.mp4'
+import jelly from '../assets/jelly.svg'
 
 export default function SignIn() {
 
@@ -62,26 +63,15 @@ export default function SignIn() {
     }
 
     const JellyfishIcon = () => (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-6 h-6 text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]"
-        >
-            <path d="M12 2C7.58 2 4 5.58 4 10v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2c0-4.42-3.58-8-8-8z" />
-            <path d="M6 14s.5 4 2 5" />
-            <path d="M10 14s.5 6 2 7" />
-            <path d="M14 14s-.5 6-2 7" />
-            <path d="M18 14s-.5 4-2 5" />
-        </svg>
+        <img
+            src={jelly}
+            alt="Jellyfish"
+            className="w-6 h-6 object-contain drop-shadow-[0_0_8px_rgba(217,70,239,0.8)]"
+        />
     )
 
     return (
-        <div className="flex items-center justify-center h-screen w-screen bg-blue-100 p-[2vh] sm:p-[2vw] overflow-hidden">
+        <div className="flex items-center justify-center h-screen w-screen bg-black p-[1vh] sm:p-[1vw] overflow-hidden">
 
             <div className="relative w-full h-full rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-2xl border border-gray-800 font-sans flex items-center justify-center">
 
@@ -205,9 +195,10 @@ export default function SignIn() {
                         <p className="text-white font-light text-[1rem]">
 
                             {isLogin
-                                ? "Don't have an account? "
-                                : "Already sign in ? "
+                                ? "Don't have an account ? "
+                                : "Already signed in ? "
                             }
+
                             <button
                                 type="button"
                                 onClick={() => {

@@ -16,12 +16,12 @@ export function AuthProvider({ children }) {
         const fetchUserData = async () => {
             if (token) {
                 try {
-                    const res = await fetch(`${API}/user`, {
+                    // call the new /user/me endpoint which returns the authenticated user
+                    const res = await fetch(`${API}/user/me`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        // Support various response formats: user object directly, { user: ... }, or { data: ... }
                         const userData = data.user || data.data || data;
                         setUser(userData);
                     } else {
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
                 localStorage.setItem("token", receivedToken);
                 setToken(receivedToken);
 
-                const userRes = await fetch(`${API}/user`, {
+                const userRes = await fetch(`${API}/user/me`, {
                     headers: { Authorization: `Bearer ${receivedToken}` },
                 });
                 const userDataResponse = await userRes.json();

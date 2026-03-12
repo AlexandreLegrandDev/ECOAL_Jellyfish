@@ -17,7 +17,7 @@ const EditProfile = () => {
     // Update form when user data is available
     React.useEffect(() => {
         if (user) {
-            const userData = user.data || user;
+            const userData = user.data || user.user || user;
             setFormData({
                 name: userData.name || userData.username || "",
                 email: userData.email || "",
@@ -62,8 +62,17 @@ const EditProfile = () => {
         setLoading(true);
         setError(null);
 
+        // resolve possibly wrapped user object (user.data, user.user, etc.)
+        const currentUser = user?.data || user?.user || user;
+        const userId = currentUser?.id;
+        if (!userId) {
+            setError("Impossible de déterminer l'utilisateur connecté.");
+            setLoading(false);
+            return;
+        }
+
         try {
-            const response = await fetch("http://localhost:8000/api/user/update", {
+            const response = await fetch(`http://localhost:8000/api/user/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

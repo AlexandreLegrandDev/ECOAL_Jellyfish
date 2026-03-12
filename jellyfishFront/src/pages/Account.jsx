@@ -5,7 +5,7 @@ import { ArrowLeft, LogOut, Pencil, Plus } from "lucide-react";
 import CollectionButton from "../components/collection-button.jsx";
 
 function Account() {
-    const { user, token, logout } = useAuth();
+    const {user, token, logout} = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -35,7 +35,7 @@ function Account() {
             try {
                 // Fetch the user's collections structure
                 const res = await fetch(`http://localhost:8000/api/user/${user.id}/collection`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {Authorization: `Bearer ${token}`}
                 });
 
                 if (res.ok) {
@@ -45,7 +45,7 @@ function Account() {
                         // For a simple implementation, let's just make a follow-up request to fetch all jellyfishes for this specific collection 
                         // The user endpoint might not include all jellies inside by default depending on the API resource
                         const collectionRes = await fetch(`http://localhost:8000/api/collection/${collections[0].id}`, {
-                            headers: { Authorization: `Bearer ${token}` }
+                            headers: {Authorization: `Bearer ${token}`}
                         });
 
                         if (collectionRes.ok) {
@@ -83,7 +83,7 @@ function Account() {
                     onClick={() => navigate("/")}
                     className="absolute top-4 left-4 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white/80 hover:text-white"
                 >
-                    <ArrowLeft size={24} />
+                    <ArrowLeft size={24}/>
                 </button>
 
                 <button

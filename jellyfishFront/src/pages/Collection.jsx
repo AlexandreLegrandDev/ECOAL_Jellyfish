@@ -109,6 +109,7 @@ const Collection = () => {
         return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
 
+
     return (
         <div
             className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-colors duration-1000 ease-in-out"
@@ -238,6 +239,7 @@ const Collection = () => {
                                 }}
                             />
                         </div>
+
                     </div>
                 )}
 

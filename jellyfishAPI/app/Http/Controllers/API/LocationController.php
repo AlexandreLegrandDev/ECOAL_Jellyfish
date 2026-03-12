@@ -21,7 +21,14 @@ class LocationController extends Controller
      */
     public function store(Request $request)
     {
-        $location = Location::create($request->all());
+        $validated = $request->validate([
+            'id_jellyfish' => 'required|exists:jellyfishes,id',
+            'lat' => 'required|numeric|between:-90,90',
+            'long' => 'required|numeric|between:-180,180'
+        ]);
+
+        $location = Location::create($validated);
+
         return response()->json($location, 201);
     }
 
@@ -38,7 +45,13 @@ class LocationController extends Controller
      */
     public function update(Request $request, Location $location)
     {
-        $location->update($request->all());
+        $validated = $request->validate([
+            'lat' => 'numeric',
+            'long' => 'numeric'
+        ]);
+
+        $location->update($validated);
+
         return response()->json($location);
     }
 

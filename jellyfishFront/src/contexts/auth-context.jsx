@@ -22,7 +22,10 @@ export function AuthProvider({ children }) {
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        const userData = data.user || data.data || data;
+                        let userData = data.user || data.data || data;
+                        if (userData && userData.avatar && !userData.avatar.startsWith('http')) {
+                            userData.avatar = `${API.replace('/api', '')}/storage/${userData.avatar}`;
+                        }
                         setUser(userData);
                     } else {
                         // Token might be invalid/expired
@@ -63,7 +66,10 @@ export function AuthProvider({ children }) {
                     headers: { Authorization: `Bearer ${receivedToken}` },
                 });
                 const userDataResponse = await userRes.json();
-                const userData = userDataResponse.user || userDataResponse.data || userDataResponse;
+                let userData = userDataResponse.user || userDataResponse.data || userDataResponse;
+                if (userData && userData.avatar && !userData.avatar.startsWith('http')) {
+                    userData.avatar = `${API.replace('/api', '')}/storage/${userData.avatar}`;
+                }
                 setUser(userData);
             }
 
@@ -114,7 +120,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("token");
         setToken(null);
         setUser(null);
-        showNotification("Sessão terminada!", "success");
+        showNotification("Logout successfull !", "success");
         navigate("/");
     }
 

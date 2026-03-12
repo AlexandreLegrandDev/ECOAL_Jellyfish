@@ -21,7 +21,7 @@ function Login() {
 
         try {
             await login(email, password);
-            showNotification("Login feito com sucesso!", "success");
+            showNotification("Login successful !", "success");
         } catch (err) {
             setError(err.message);
 

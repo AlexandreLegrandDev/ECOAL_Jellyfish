@@ -14,7 +14,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        return response()->json(User::with('collection')->get());
+        $users = User::with('collection')->get()->map(function($u){
+            if ($u->avatar) {
+                $u->avatar = url("/storage/{$u->avatar}");
+            }
+            return $u;
+        });
+        return response()->json($users);
     }
 
     /**
@@ -30,30 +36,21 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response()->json($user->load('collection'));
+        $user->load('collection');
+        if ($user->avatar) {
+            $user->avatar = url("/storage/{$user->avatar}");
+        }
+        return response()->json($user);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        // only allow users to update their own profile
-        if ($user->id !== auth()->id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        $user = $request->user();
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|min:6'
-        ]);
-
-        if(isset($validated['password'])){
-            $validated['password'] = Hash::make($validated['password']);
-        }
-        
-        $user->update($validated);
+        $user->update($request->only(['name','email','avatar']));
 
         return response()->json($user);
     }

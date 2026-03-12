@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CriteriaField;
 use App\Models\CriteriaFieldValue;
 use App\Models\Jellyfish;
+use App\Models\Collection;
 use Illuminate\Http\Request;
 
 class JellyfishController extends Controller
@@ -37,6 +38,8 @@ class JellyfishController extends Controller
             'criteria' => 'sometimes|array'
         ]);
 
+        // enforce that the collection belongs to the authenticated user
+        $collection = Collection::find($validated['id_collection']);
         $jellyfish = Jellyfish::create([
             'id_collection' => $validated['id_collection'],
             'name' => $validated['name'],

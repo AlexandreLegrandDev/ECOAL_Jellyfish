@@ -82,13 +82,13 @@ function Login() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-auto mt-16 py-4 text-lg font-bold text-white transition-all transition-transform rounded-full bg-gradient-to-r from-accent-blue to-accent-purple shadow-[0_10px_25px_rgba(28,95,209,0.3)] active:scale-95 active:shadow-none"
+                            className="w-auto mt-12 py-4 text-lg font-bold text-white transition-all transition-transform rounded-full bg-gradient-to-r from-accent-blue to-accent-purple shadow-[0_10px_25px_rgba(28,95,209,0.3)] active:scale-95 active:shadow-none"
                         >
                             {loading ? "Logging in..." : "Login"}
                         </button>
                     </form>
 
-                    <div className="w-full flex flex-col items-center">
+                    <div className="w-full flex flex-col items-center mt-2">
                         <p>Don't have an account? <Link to="/create-account" className="text-[#0081FD] hover:underline">Sign up</Link></p>
                     </div>
                 </div>

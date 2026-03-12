@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/auth-context.jsx';
 import { motion } from 'framer-motion';
 import heroImage from '../assets/images/hero_jellyfish.png';
 import cardImage from '../assets/images/moon_jellyfish_card.png';
@@ -42,6 +43,7 @@ const DetailedJellyfishIcon = ({ className = "" }) => (
 const ItemDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     
     const [item, setItem] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -170,11 +172,13 @@ const ItemDetail = () => {
                 </div>
 
                 {/* Remove from collection button */}
-                <div className="flex justify-center mt-6 mb-2">
-                    <button className="px-5 py-1.5 rounded-full text-xs font-medium text-white/50 border border-white/10 bg-transparent transition-all duration-300 hover:text-white hover:border-accent-purple/60 hover:shadow-[0_0_15px_rgba(174,48,208,0.2)]">
-                        Remove from collection
-                    </button>
-                </div>
+                {user && item.collection && user.id === item.collection.id_user && (
+                    <div className="flex justify-center mt-6 mb-2">
+                        <button className="px-5 py-1.5 rounded-full text-xs font-medium text-white/50 border border-white/10 bg-transparent transition-all duration-300 hover:text-white hover:border-accent-purple/60 hover:shadow-[0_0_15px_rgba(174,48,208,0.2)]">
+                            Remove from collection
+                        </button>
+                    </div>
+                )}
 
                 {/* Background decorative waves */}
                 <div className="fixed bottom-0 left-0 w-full rounded-t-full h-32 opacity-10 pointer-events-none" style={{ background: 'radial-gradient(ellipse at bottom, var(--accent-blue), transparent)', zIndex: -1 }}></div>

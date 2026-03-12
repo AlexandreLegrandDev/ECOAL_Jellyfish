@@ -31,18 +31,31 @@ class JellyfishController extends Controller
             'id_collection' => 'required|exists:collections,id',
             'name' => 'required|string|max:255',
             'img' => 'required|string',
-            'depth' => 'required|integer|min:1|max:5'
+            'depth' => 'required|integer',
+            'criteria' => 'sometimes|array'
         ]);
 
-        // Check if the collection belongs to the authenticated user
-        // $collection = \App\Models\Collection::find($validated['id_collection']);
-        // if ($collection->id_user !== auth()->id()) {
-        //     return response()->json(['error' => 'Unauthorized'], 403);
-        // }
+        $jellyfish = Jellyfish::create([
+            'id_collection' => $validated['id_collection'],
+            'name' => $validated['name'],
+            'img' => $validated['img'],
+            'depth' => $validated['depth'],
+        ]);
 
-        $jellyfish = Jellyfish::create($validated);
+        if (isset($validated['criteria'])) {
+            foreach ($validated['criteria'] as $field => $value) {
+                $criteriaField = \App\Models\CriteriaField::where('name', $field)->first();
+                if ($criteriaField) {
+                    \App\Models\CriteriaFieldValue::create([
+                        'id_jellyfish' => $jellyfish->id,
+                        'id_criteria_fields' => $criteriaField->id,
+                        'value' => $value
+                    ]);
+                }
+            }
+        }
 
-        return response()->json($jellyfish, 201);
+        return response()->json($jellyfish->load('criteriaValues.criteriaField'), 201);
     }
 
     /**

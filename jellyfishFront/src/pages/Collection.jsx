@@ -1,44 +1,50 @@
-import React, {useState} from 'react';
-import {Link, useSearchParams} from 'react-router-dom';
+import React, {useEffect, useMemo, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import {motion, AnimatePresence} from 'framer-motion';
 import Header from '../components/Header.jsx';
-import cardImage from '../assets/images/moon_jellyfish_card.png';
-import BackgroundAnimation from "../components/background-animation.jsx";
 import CollectionButton from "../components/collection-button.jsx";
 import {Plus} from "lucide-react";
 
-const DEEP_FILTERS = [
-    {label: '0 - 100', value: '0-100'},
-    {label: '100 - 200', value: '100-200'},
-    {label: '200 +', value: '200+'},
-];
-
-const items = Array.from({length: 8}, (_, i) => ({
-    id: i + 1,
-    name: `Moon Jellyfish #${i + 1}`,
-    price: [80, 150, 220, 95, 175, 310, 60, 130][i],
-    image: cardImage,
-    height: [220, 180, 260, 160, 240, 280, 200, 170][i]
-}));
+const API = 'http://localhost:8000/api';
 
 const Collection = () => {
-    const [isUserLoggedIn, setUserLoggedIn] = useState(false);
+    // const [isUserLoggedIn, setUserLoggedIn] = useState(false);
     const [searchParams] = useSearchParams();
     const isMine = searchParams.get('mine') === 'true';
-    const [activeFilter, setActiveFilter] = useState(null);
+    const [activeFilter, setActiveFilter] = useState(['0-100', '100-200', '+200']);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('jellys');
+    const [jellyfishes, setJellyfishes] = useState([]);
 
+    const [collection, setCollection] = useState([]);
 
-    const filteredItems = items.filter((item) => {
-        const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase());
-        if (!matchesSearch) return false;
-        if (!activeFilter) return true;
-        if (activeFilter === '0-100') return item.price <= 100;
-        if (activeFilter === '100-200') return item.price > 100 && item.price <= 200;
-        if (activeFilter === '200+') return item.price > 200;
-        return true;
-    });
+    const cardsHeights= [220, 180, 260, 160, 240, 280, 200, 170];
+
+    useEffect(() => {
+        async function fetchJellyfishes() {
+            const res = await fetch(`${API}/jellyfish`);
+            const data = await res.json();
+
+            console.log(JSON.stringify(data, null, 2));
+
+            setJellyfishes(data);
+        }
+
+        fetchJellyfishes();
+    }, []);
+
+    const filteredItems = useMemo(() => {
+        if (activeFilter.length === 0) return [];
+
+        return jellyfishes.filter(j =>
+            activeFilter.some(f => {
+                if (f === '0-100') return j.depth >= 0 && j.depth <= 100;
+                if (f === '100-200') return j.depth > 100 && j.depth <= 200;
+                if (f === '+200') return j.depth > 200;
+                return true;
+            })
+        );
+    }, [activeFilter, jellyfishes]);
 
     return (
         <div
@@ -52,10 +58,76 @@ const Collection = () => {
 
             <div className="w-full flex-1 flex flex-row gap-6">
                 {activeTab === 'jellys' && (
-                    <div className="flex flex-col gap-4 items-center">
-                        <p style={{writingMode: 'vertical-lr', textOrientation: 'mixed'}}>0-100</p>
-                        <p style={{writingMode: 'vertical-lr', textOrientation: 'mixed'}}>100-200</p>
-                        <p style={{writingMode: 'vertical-lr', textOrientation: 'mixed'}}>+200</p>
+                    <div
+                        className="h-full flex flex-col items-center justify-between p-1 gap-1 rounded-full"
+                        style={{background: 'linear-gradient(to right, #0081FD, #074AD1)'}}
+                    >
+                        <button
+                            className={`w-full px-6 py-2 text-white font-bold text-sm ${
+                                activeFilter.includes('0-100')
+                                    ? activeFilter.includes('100-200')
+                                        ? 'rounded-t-full'
+                                        : 'rounded-full'
+                                    : 'rounded-t-full'
+                            }`}
+                            style={{
+                                background: activeFilter.includes('0-100') ? 'rgba(255,255,255,0.15)' : '',
+                                writingMode: 'vertical-lr', textOrientation: 'mixed'
+                            }}
+                            onClick={() => setActiveFilter(prev =>
+                                prev.includes('0-100')
+                                    ? prev.filter(f => f !== '0-100')
+                                    : [...prev, '0-100']
+                            )}
+                        >
+                            0-100
+                        </button>
+
+                        <button
+                            className={`w-full px-6 py-2 text-white font-bold text-sm ${
+                                activeFilter.includes('100-200')
+                                    ? activeFilter.includes('0-100') && activeFilter.includes('+200')
+                                        ? ''
+                                        : activeFilter.includes('0-100')
+                                            ? 'rounded-b-full'
+                                            : activeFilter.includes('+200')
+                                                ? 'rounded-t-full'
+                                                : 'rounded-full'
+                                    : ''
+                            }`}
+                            style={{
+                                background: activeFilter.includes('100-200') ? 'rgba(255,255,255,0.15)' : '',
+                                writingMode: 'vertical-lr', textOrientation: 'mixed'
+                            }}
+                            onClick={() => setActiveFilter(prev =>
+                                prev.includes('100-200')
+                                    ? prev.filter(f => f !== '100-200')
+                                    : [...prev, '100-200']
+                            )}
+                        >
+                            100-200
+                        </button>
+
+                        <button
+                            className={`w-full px-6 py-2 text-white font-bold text-sm ${
+                                activeFilter.includes('+200')
+                                    ? activeFilter.includes('100-200')
+                                        ? 'rounded-b-full'
+                                        : 'rounded-full'
+                                    : 'rounded-b-full'
+                            }`}
+                            style={{
+                                background: activeFilter.includes('+200') ? 'rgba(255,255,255,0.15)' : '',
+                                writingMode: 'vertical-lr', textOrientation: 'mixed'
+                            }}
+                            onClick={() => setActiveFilter(prev =>
+                                prev.includes('+200')
+                                    ? prev.filter(f => f !== '+200')
+                                    : [...prev, '+200']
+                            )}
+                        >
+                            +200
+                        </button>
                     </div>
                 )}
 
@@ -101,7 +173,7 @@ const Collection = () => {
                         ) : (
                             <motion.div layout className="columns-2 gap-3 space-y-3">
                                 <AnimatePresence mode="popLayout">
-                                    {filteredItems.map((item) => (
+                                    {filteredItems.map((item, idx) => (
                                         <motion.div
                                             layout
                                             initial={{opacity: 0, y: 50}}
@@ -113,9 +185,9 @@ const Collection = () => {
                                         >
                                             <CollectionButton
                                                 title={item.name}
-                                                image={item.image}
+                                                image={item.img}
                                                 navigateTo={`/item/${item.id}`}
-                                                height={item.height}
+                                                height={cardsHeights[idx % 3]}
                                             />
                                         </motion.div>
                                     ))}

@@ -17,12 +17,14 @@ const EditProfile = () => {
     // Update form when user data is available
     React.useEffect(() => {
         if (user) {
-            const userData = user.data || user;
-            setFormData({
+            // Support both direct user object and wrapped data object
+            const userData = user.user || user.data || user;
+            setFormData(prev => ({
+                ...prev,
                 name: userData.name || userData.username || "",
                 email: userData.email || "",
                 avatar: userData.avatar || "/jelly.svg",
-            });
+            }));
         }
     }, [user]);
 
@@ -102,7 +104,7 @@ const EditProfile = () => {
             <div className="relative bg-gradient-to-b from-[#21234F] to-[#121338] rounded-b-[40px] border-b border-accent-purple/30 shadow-[0_10px_30px_rgba(174,48,208,0.1)] overflow-hidden min-h-[192px]">
                 {/* Back Button */}
                 <button
-                    onClick={() => navigate("/account")}
+                    onClick={() => navigate(-1)}
                     className="absolute top-4 left-4 z-20 w-10 h-10 bg-black/30 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/10 hover:bg-black/50 active:scale-95 transition-all text-white/80 hover:text-white"
                 >
                     <ArrowLeft size={24} />

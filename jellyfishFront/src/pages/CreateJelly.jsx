@@ -1,241 +1,355 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/auth-context.jsx";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Check } from "lucide-react";
+import { ArrowLeft, Plus, Check, Info, Droplet, Maximize2, Activity, Zap } from "lucide-react";
 
-// Inline Jelly SVG component to allow for easy gradient styling
-const JellyIcon = ({ className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 2C7.58 2 4 5.58 4 10c0 1.66 1.34 3 3 3s3-1.34 3-3V8c0-1.1.9-2 2-2s2 .9 2 2v2c0 1.66 1.34 3 3 3s3-1.34 3-3c0-4.42-3.58-8-8-8z" />
-    <path d="M7 13v6a2 2 0 0 0 4 0v-4" />
-    <path d="M13 15v4a2 2 0 0 0 4 0v-6" />
-    <path d="M10 13v8" />
-    <path d="M14 13v8" />
-  </svg>
-);
+const CreateJelly = () => {
+    const navigate = useNavigate();
+    const { user, token, showNotification } = useAuth();
+    const fileInputRef = useRef(null);
 
-const InputField = ({ label, type = "text", wrapperClass = "", ...props }) => {
-  return (
-    <div className={`relative flex items-center bg-[#0B0D28]/80 border border-accent-purple/50 rounded-full overflow-hidden px-4 py-3 mb-4 shadow-[0_0_10px_rgba(174,48,208,0.15)] focus-within:shadow-[0_0_15px_rgba(174,48,208,0.4)] focus-within:border-accent-purple transition-all ${wrapperClass}`}>
-      <div className="mr-3 text-[#A855F7] opacity-80 shrink-0">
-        <JellyIcon className="w-5 h-5" />
-      </div>
-      <input 
-        type={type} 
-        placeholder={label}
-        className="bg-transparent border-none outline-none text-white placeholder-white/50 w-full text-sm"
-        {...props}
-      />
-    </div>
-  );
-};
+    const [name, setName] = useState("");
+    const [dangerLevel, setDangerLevel] = useState(1);
+    const [isLightYes, setIsLightYes] = useState(true);
+    const [collectionId, setCollectionId] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [size, setSize] = useState("");
+    const [deep, setDeep] = useState("");
+    const [color, setColor] = useState("");
+    const [diameter, setDiameter] = useState("");
+    const [description, setDescription] = useState("");
+    const [loading, setLoading] = useState(false);
 
-function CreateJelly() {
-  const navigate = useNavigate();
-  const { user, token } = useAuth();
-  const [dangerLevel, setDangerLevel] = useState(0);
-  const [isLightYes, setIsLightYes] = useState(true);
-  
-  // State for the user's collection ID
-  const [collectionId, setCollectionId] = useState(null);
-  
-  // Form states
-  const [imagePreview, setImagePreview] = useState(null);
-  const [size, setSize] = useState("");
-  const [deep, setDeep] = useState("");
-  const [color, setColor] = useState("");
-  const [diameter, setDiameter] = useState("");
-  const [description, setDescription] = useState("");
+    useEffect(() => {
+        // Fetch user collections to get an ID we can post to
+        async function fetchCollection() {
+            if (!user || !token) return;
+            try {
+                const userId = user.id || user.data?.id || user.user?.id;
+                if (!userId) {
+                    console.error("No user ID found", user);
+                    return;
+                }
 
-  useEffect(() => {
-    // Fetch user collections to get an ID we can post to
-    async function fetchCollection() {
-      if (!user || !token) return;
-      try {
-        const res = await fetch(`http://localhost:8000/api/user/${user.id}/collection`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const collections = await res.json();
-          if (collections.length > 0) {
-            setCollectionId(collections[0].id);
-          }
+                const res = await fetch(`http://localhost:8000/api/user/${userId}/collection`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const collectionsList = await res.json();
+
+                    if (collectionsList.length > 0) {
+                        setCollectionId(collectionsList[0].id);
+                    } else {
+                        // FALLBACK: If user has no collection, create a default one
+                        const createRes = await fetch("http://localhost:8000/api/collection", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                id_user: userId,
+                                name: "My Discoveries",
+                                description: "Automatic collection for my new jellyfish",
+                                status: 0,
+                                img: "https://images.unsplash.com/photo-1544923246-77307dd654ca?q=80&w=400"
+                            }),
+                        });
+
+                        if (createRes.ok) {
+                            const newColl = await createRes.json();
+                            setCollectionId(newColl.id);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch/create collection", err);
+            }
         }
-      } catch (err) {
-        console.error("Failed to fetch collection", err);
-      }
-    }
-    fetchCollection();
-  }, [user, token]);
+        fetchCollection();
+    }, [user, token]);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!collectionId) {
-      alert("No collection found for this user. Cannot create jellyfish.");
-      return;
-    }
-
-    const payload = {
-      id_collection: collectionId,
-      name: "Custom Jelly", // Assuming name isn't in form fields yet, defaulting for now
-      img: imagePreview || "https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=400",
-      depth: dangerLevel === 0 ? 1 : dangerLevel, // mapping dangerLevel to depth loosely if required
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
-    try {
-      const res = await fetch("http://localhost:8000/api/jellyfish", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+    const triggerFilePicker = () => {
+        fileInputRef.current.click();
+    };
 
-      if (res.ok) {
-        navigate("/account");
-      } else {
-        const data = await res.json();
-        console.error("Failed to create jellyfish:", data);
-        alert("Failed to create jellyfish: " + (data.message || data.error || "Unknown error"));
-      }
-    } catch (error) {
-      console.error("Error creating jellyfish:", error);
-      alert("Error creating jellyfish. Check console.");
-    }
-  };
+    const handleCreate = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
 
-  return (
-    <div className="w-full min-h-screen bg-bg-dark text-white p-6 relative pb-10">
-      
-      {/* Header */}
-      <div className="flex items-center justify-center relative mb-8 mt-4">
-        <button 
-          onClick={() => navigate(-1)}
-          className="absolute left-0 text-white/80 hover:text-white transition-colors"
-        >
-          <ArrowLeft size={28} />
-        </button>
-        <h1 className="text-xl font-bold">Create new jelly</h1>
-      </div>
+        if (!collectionId) {
+            showNotification("No collection found for this user.", "error");
+            return;
+        }
 
-      {/* Image Upload Area */}
-      <div className="relative w-full aspect-square max-h-[250px] bg-[#292B57]/50 rounded-3xl border border-accent-purple/40 shadow-[0_0_20px_rgba(174,48,208,0.2)] flex items-center justify-center mb-8 cursor-pointer hover:bg-[#292B57]/70 transition-colors overflow-hidden">
-        {imagePreview ? (
-          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-        ) : (
-          <Plus size={80} className="text-white font-bold drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" strokeWidth={2.5} />
-        )}
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={handleImageUpload}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-      </div>
+        if (!name || !imagePreview) {
+            showNotification("Please provide at least a name and an image.", "error");
+            return;
+        }
 
-      {/* Form Fields */}
-      <div className="flex flex-col">
-        <InputField label="Size" value={size} onChange={(e) => setSize(e.target.value)} />
-        <InputField label="Deep" value={deep} onChange={(e) => setDeep(e.target.value)} />
-        <InputField label="Color" value={color} onChange={(e) => setColor(e.target.value)} />
+        setLoading(true);
 
-        {/* Danger rating */}
-        <div className="relative flex items-center bg-[#0B0D28]/80 border border-accent-purple/50 rounded-full px-4 py-3 mb-4 shadow-[0_0_10px_rgba(174,48,208,0.15)]">
-          <div className="mr-3 text-[#A855F7] opacity-80 shrink-0">
-            <JellyIcon className="w-5 h-5" />
-          </div>
-          <span className="text-white/50 text-sm mr-4">Danger</span>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((lvl) => (
-              <div 
-                key={lvl} 
-                onClick={() => setDangerLevel(lvl)}
-                className={`w-5 h-5 rounded-full border border-white cursor-pointer transition-colors ${lvl <= dangerLevel ? 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]' : 'bg-transparent'}`}
-              />
-            ))}
-          </div>
+        const mappedDepth = Math.max(1, Math.min(10, Math.ceil(parseInt(deep || "0") / 100)));
+
+        const payload = {
+            id_collection: collectionId,
+            name: name,
+            img: imagePreview,
+            depth: mappedDepth || 1,
+            criteria: {
+                "Size": parseInt(size) || 0,
+                "Diameter": parseInt(diameter) || 0,
+                "Dangerosity": dangerLevel,
+                "Bioluminescent": isLightYes ? 1 : 0
+            }
+        };
+
+        try {
+            const res = await fetch("http://localhost:8000/api/jellyfish", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (res.ok) {
+                showNotification("Jellyfish registered successfully!", "success");
+                navigate("/account");
+            } else {
+                const data = await res.json();
+                showNotification(data.message || "Failed to create jellyfish", "error");
+            }
+        } catch (error) {
+            console.error("Error creating jellyfish:", error);
+            showNotification("Error connecting to server", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="w-full min-h-screen bg-bg-dark flex flex-col pb-20">
+            {/* Hidden File Input */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+                accept="image/*"
+            />
+
+            {/* Header Section (Like Edit Profile) */}
+            <div className="relative bg-gradient-to-b from-[#21234F] to-[#121338] rounded-b-[40px] border-b border-accent-purple/30 shadow-[0_10px_30px_rgba(174,48,208,0.1)] overflow-hidden min-h-[192px]">
+                {/* Back Button */}
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="absolute top-4 left-4 z-20 w-10 h-10 bg-black/30 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/10 hover:bg-black/50 active:scale-95 transition-all text-white/80 hover:text-white"
+                >
+                    <ArrowLeft size={24} />
+                </button>
+
+                {/* Header Image Preview / Placeholder */}
+                <div className="relative w-full h-48 group cursor-pointer" onClick={triggerFilePicker}>
+                    {imagePreview ? (
+                        <img
+                            src={imagePreview}
+                            alt="Jelly Preview"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-[#1A1C3D] flex flex-col items-center justify-center text-white/20 gap-2">
+                            <Plus size={48} />
+                            <span className="text-xs font-bold uppercase tracking-tighter">Choose Image</span>
+                        </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <p className="text-white/0 group-hover:text-white/60 text-xs font-bold uppercase tracking-widest transition-all">
+                            {imagePreview ? "Change Photo" : "Upload Photo"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="absolute bottom-4 left-6 z-10">
+                    <h1 className="text-xl font-bold text-white uppercase tracking-wider drop-shadow-lg">Create New Jelly</h1>
+                </div>
+            </div>
+
+            <div className="flex-1 px-6 pt-10 max-w-lg mx-auto w-full">
+                <form onSubmit={handleCreate} className="space-y-6">
+                    {/* Name */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                             Name
+                        </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="e.g. Blue Lagoon"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20"
+                            required
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Size */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                                <Maximize2 size={14} /> Size (cm)
+                            </label>
+                            <input
+                                type="number"
+                                value={size}
+                                onChange={(e) => setSize(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20"
+                            />
+                        </div>
+
+                        {/* Diameter */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                                <Maximize2 size={14} /> Diameter (cm)
+                            </label>
+                            <input
+                                type="number"
+                                value={diameter}
+                                onChange={(e) => setDiameter(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Depth */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                                <Droplet size={14} /> Depth (m)
+                            </label>
+                            <input
+                                type="number"
+                                value={deep}
+                                onChange={(e) => setDeep(e.target.value)}
+                                placeholder="0"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20"
+                            />
+                        </div>
+
+                        {/* Color */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                                 Color
+                            </label>
+                            <input
+                                type="text"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                placeholder="Jelly color"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Danger Rating */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                            <Activity size={14} /> Danger Level
+                        </label>
+                        <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-[2rem] px-5 py-3">
+                            {[1, 2, 3, 4, 5].map((lvl) => (
+                                <button
+                                    key={lvl}
+                                    type="button"
+                                    onClick={() => setDangerLevel(lvl)}
+                                    className={`w-10 h-10 rounded-full border transition-all flex items-center justify-center font-bold ${lvl <= dangerLevel
+                                        ? 'bg-accent-purple border-accent-purple shadow-[0_0_15px_rgba(174,48,208,0.5)] scale-110 text-white'
+                                        : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {lvl}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Light Toggle */}
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                            <Zap size={14} /> Bioluminescent
+                        </label>
+                        <div className="flex bg-white/5 border border-white/10 rounded-[2rem] p-1.5">
+                            <button
+                                type="button"
+                                onClick={() => setIsLightYes(true)}
+                                className={`flex-1 py-3 rounded-full transition-all font-bold text-sm ${isLightYes ? 'bg-accent-purple text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                            >
+                                YES
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsLightYes(false)}
+                                className={`flex-1 py-3 rounded-full transition-all font-bold text-sm ${!isLightYes ? 'bg-accent-purple text-white shadow-lg' : 'text-white/40 hover:text-white'}`}
+                            >
+                                NO
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/60 ml-1 flex items-center gap-2">
+                            <Info size={14} /> Description
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Details about your discovery..."
+                            rows={4}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-accent-purple/50 focus:bg-white/10 outline-none transition-all placeholder:text-white/20 resize-none pt-4"
+                        />
+                    </div>
+
+                    <div className="pt-8">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 text-lg font-bold text-white transition-all rounded-full bg-gradient-to-r from-accent-blue to-accent-purple shadow-[0_10px_25px_rgba(174,48,208,0.3)] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 group"
+                        >
+                            {loading ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Discovering...
+                                </span>
+                            ) : (
+                                <>
+                                    <Plus size={20} className="group-hover:scale-110 transition-transform" />
+                                    Register Discovery
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <InputField label="Diameter" value={diameter} onChange={(e) => setDiameter(e.target.value)} />
-
-        {/* Light toggle */}
-        <div className="relative flex items-center bg-[#0B0D28]/80 border border-accent-purple/50 rounded-full px-4 py-3 mb-4 shadow-[0_0_10px_rgba(174,48,208,0.15)] max-w-max pr-8">
-          <div className="mr-3 text-[#A855F7] opacity-80 shrink-0">
-            <JellyIcon className="w-5 h-5" />
-          </div>
-          <span className="text-white/50 text-sm mr-6">Light</span>
-          
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <div 
-                className={`w-5 h-5 rounded border border-accent-purple flex items-center justify-center transition-colors ${isLightYes ? 'bg-accent-purple/20' : 'bg-transparent'}`}
-                onClick={() => setIsLightYes(true)}
-              >
-                {isLightYes && <Check size={14} className="text-[#A855F7]" />}
-              </div>
-              <span className="text-sm text-white/80">Yes</span>
-            </label>
-            
-            <label className="flex items-center gap-2 cursor-pointer">
-              <div 
-                className={`w-5 h-5 rounded border border-accent-purple flex items-center justify-center transition-colors ${!isLightYes ? 'bg-accent-purple/20' : 'bg-transparent'}`}
-                onClick={() => setIsLightYes(false)}
-              >
-                {!isLightYes && <Check size={14} className="text-[#A855F7]" />}
-              </div>
-              <span className="text-sm text-white/80">No</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Description TextArea */}
-        <div className="relative flex bg-[#0B0D28]/80 border border-accent-purple/50 rounded-[30px] overflow-hidden px-4 py-3 mb-8 shadow-[0_0_10px_rgba(174,48,208,0.15)] min-h-[120px]">
-          <div className="mr-3 mt-1 text-[#A855F7] opacity-80 shrink-0">
-            <JellyIcon className="w-5 h-5" />
-          </div>
-          <textarea 
-            placeholder="Description"
-            className="bg-transparent border-none outline-none text-white placeholder-white/50 w-full text-sm resize-none pt-1"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-
-        {/* Create Button */}
-        <div className="flex justify-center">
-          <button 
-            onClick={handleCreate}
-            className="w-2/3 max-w-[250px] text-white font-medium py-3 rounded-full transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(174,48,208,0.4)]"
-            style={{ background: 'linear-gradient(to right, #0081FD, #A855F7, #F53DFF)' }}
-          >
-            Create
-          </button>
-        </div>
-
-      </div>
-    </div>
-  );
-}
+    );
+};
 
 export default CreateJelly;

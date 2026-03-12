@@ -1,13 +1,13 @@
 import React, {useState} from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "../contexts/auth-context.jsx";
 import BackgroundAnimation from "../components/background-animation.jsx";
-import Header from "../components/Header.jsx";
-import {LockKeyhole, Mail} from "lucide-react";
+import {LockKeyhole, Mail, ArrowLeft} from "lucide-react";
 import Toast from "../components/toast-message.jsx";
 
 function Login() {
     const {login, showNotification} = useAuth();
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
@@ -36,6 +36,15 @@ function Login() {
 
     return (
         <BackgroundAnimation>
+            <div className="absolute top-6 left-6 z-50">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all cursor-pointer"
+                >
+                    <ArrowLeft size={20} color="white" />
+                </button>
+            </div>
+
             <div className="flex-1 flex flex-col items-center gap-12 mt-10">
                 <img
                     src="/jelly.svg"

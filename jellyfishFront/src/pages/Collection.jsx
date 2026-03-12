@@ -11,7 +11,7 @@ const Collection = () => {
     // const [isUserLoggedIn, setUserLoggedIn] = useState(false);
     const [searchParams] = useSearchParams();
     const isMine = searchParams.get('mine') === 'true';
-    const [selectedDepth, setSelectedDepth] = useState(200);
+    const [selectedDepth, setSelectedDepth] = useState(90);
     const [hoveredJelly, setHoveredJelly] = useState(null);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('jellys');
@@ -111,9 +111,13 @@ const Collection = () => {
 
     return (
         <div
-            className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-colors duration-1000 ease-in-out"
+            className="relative z-10 w-full h-screen flex flex-col p-4 md:p-8 gap-8 overflow-hidden transition-colors duration-1000 ease-in-out"
             style={{ backgroundColor: getDynamicBackground() }}
         >
+            {/* Decorative background glows */}
+            <div className="absolute top-20 -right-20 w-80 h-80 bg-accent-purple/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 -left-20 w-64 h-64 bg-accent-blue/5 blur-[100px] rounded-full pointer-events-none" />
+
             <Header
                 title={activeTab === 'jellys' ? 'Jellys' : 'Collections'}
                 returnTo="/"
@@ -146,7 +150,7 @@ const Collection = () => {
                 )}
             </AnimatePresence>
 
-            <div className="w-full h-[calc(115vh-240px)] flex flex-row gap-6 mb-30">
+            <div className="w-full flex-1 flex flex-row gap-6 overflow-hidden">
                 {activeTab === 'jellys' && (
                     <div className="flex flex-col items-center h-full py-4 px-2 select-none">
                         {/* Digital Depth Readout at the top */}
@@ -224,14 +228,14 @@ const Collection = () => {
 
                             {/* Minimalist Line Indicator (The "Risco") */}
                             <motion.div
-                                className="absolute left-0 -translate-x-1/2 w-full h-[2px] bg-white shadow-[0_0_15px_white] z-20 pointer-events-none"
+                                className="absolute left-0 -translate-x-1/2 w-full h-[2px] bg-white shadow-[0_0_15px_rgba(245,61,255,0.8)] z-20 pointer-events-none"
                                 animate={{ top: `${(selectedDepth / 1000) * 100}%` }}
                                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                             />
 
                             {/* Selection Glow */}
                             <motion.div
-                                className="absolute w-[2px] bg-gradient-to-b from-transparent via-white/20 to-transparent"
+                                className="absolute w-[2px] bg-gradient-to-b from-transparent via-accent-purple/40 to-transparent"
                                 animate={{
                                     top: `${(Math.max(0, selectedDepth - 50) / 1000) * 100}%`,
                                     height: '10%'
@@ -241,13 +245,13 @@ const Collection = () => {
                     </div>
                 )}
 
-                <div className="flex-1 flex flex-col gap-4">
+                <div className="flex-1 flex flex-col gap-4 overflow-hidden">
                     <div className="w-full flex flex-row gap-2 items-center">
 
 
                         <div
                             className="flex-1 flex flex-row items-center justify-between p-1 rounded-full"
-                            style={{ background: 'linear-gradient(to right, #0081FD, #074AD1)' }}
+                            style={{ background: 'linear-gradient(to right, #0081FD, #A855F7)' }}
                         >
                             <button
                                 className="w-full px-6 py-2 rounded-full text-white font-bold text-sm"
@@ -267,7 +271,7 @@ const Collection = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 custom-scrollbar pb-20">
                         {filteredItems.length === 0 ? (
                             <div
                                 className="flex flex-col items-center justify-center py-20 text-white/40"

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from "react-router-dom";
 import * as Icons from "lucide-react";
 
-const Button = ({ title, icon, navigateTo, variant = "primary", className = "", fullWidth = false }) => {
+const Button = ({ title, icon, navigateTo, variant = "primary", className = "", fullWidth = false, onClick }) => {
     const IconComponent = icon ? Icons[icon] : null;
 
     const baseStyles = `${fullWidth ? "w-full" : "px-12"} py-4 text-lg font-bold text-white transition-all transition-transform rounded-full`;
@@ -15,17 +15,24 @@ const Button = ({ title, icon, navigateTo, variant = "primary", className = "", 
     };
 
     const button = (
-        <button className={`${baseStyles} ${variants[variant]} ${className} flex items-center justify-center gap-2`}>
+        <button 
+            className={`${baseStyles} ${variants[variant]} ${className} flex items-center justify-center gap-2`}
+            onClick={onClick}
+        >
             {IconComponent && <IconComponent size={16} className="inline" />}
             {title}
         </button>
     );
 
-    return navigateTo ? (
+    return navigateTo && !onClick ? (
         <div className={`flex justify-center ${fullWidth ? "w-full" : ""}`}>
             <Link to={navigateTo} className={fullWidth ? "w-full" : ""}>{button}</Link>
         </div>
-    ) : button;
+    ) : (
+        <div className={`flex justify-center ${fullWidth ? "w-full" : ""}`}>
+            {button}
+        </div>
+    );
 };
 
 export default Button;

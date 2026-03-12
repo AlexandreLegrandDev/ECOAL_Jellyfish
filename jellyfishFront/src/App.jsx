@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Create-account.jsx';
 import CreateJelly from './pages/CreateJelly.jsx';
 import EditProfile from './pages/EditProfile.jsx';
+import CollectionDetail from './pages/CollectionDetail.jsx';
 
 const AppContent = () => {
     // We remove the global DynamicIsland here because the Header will now handle it
@@ -17,8 +18,9 @@ const AppContent = () => {
             <Routes>
                 {/* Rotas Públicas */}
                 <Route path="/" element={<Home/>}/>
-                <Route path="/collection" element={<Collection/>}/>
-                <Route path="/item/:id" element={<ItemDetail/>}/>
+                 <Route path="/collection" element={<Collection/>}/>
+                 <Route path="/collection/:id" element={<CollectionDetail/>}/>
+                 <Route path="/item/:id" element={<ItemDetail/>}/>
                 <Route path="/login" element={<Login/>}/>
                 <Route path="/create-account" element={<Register/>}/>
                 <Route path="/account" element={<Account/>}/>

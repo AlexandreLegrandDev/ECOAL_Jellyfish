@@ -4,12 +4,7 @@ import { motion } from 'framer-motion';
 import heroImage from '../assets/images/hero_jellyfish.png';
 import cardImage from '../assets/images/moon_jellyfish_card.png';
 
-// Mock data (we can assume this would be fetched based on the ID)
-const jellyfishes = [
-    { id: 1, name: "Purple", type: "Jellyfish", image: cardImage, size: "25 cm", deep: "200 m", color: "purple", danger: "***", diameter: "10 cm", light: "Yes" },
-    { id: 2, name: "Moon", type: "Jellyfish", image: cardImage, size: "20 cm", deep: "150 m", color: "blue", danger: "*", diameter: "15 cm", light: "No" },
-    { id: 3, name: "Pink", type: "Jellyfish", image: cardImage, size: "30 cm", deep: "300 m", color: "pink", danger: "**", diameter: "12 cm", light: "Yes" },
-];
+const API = 'http://localhost:8000/api';
 
 // Small generic Jellyfish Icon SVG for bullets
 const JellyfishIcon = ({ className = "mr-2" }) => (
@@ -28,28 +23,65 @@ const DetailedJellyfishIcon = ({ className = "" }) => (
 
         {/* Internal Bell Structure */}
         <path d="M12 4C8.68629 4 6 6.68629 6 10C6 11 6.3 11.8 6.8 12.5C7.2 13 8.3 13 9 12.5C9.5 12.1 10.5 12.1 11 12.5C11.5 12.9 12.5 12.9 13 12.5C13.5 12.1 14.5 12.1 15 12.5C15.7 13 16.8 13 17.2 12.5C17.7 11.8 18 11 18 10C18 6.68629 15.3137 4 12 4Z" fill="#ff7df8" opacity="0.6" />
-        <circle cx="9.5" cy="8.5" r="1.5" fill="#fff" opacity="0.9" />
-        <circle cx="14.5" cy="8.5" r="1.5" fill="#fff" opacity="0.9" />
-
-        {/* Intricate Tentacles (Trailing down) */}
         <path d="M7 16C7 16 5 19 6 22C7 25 9 22 8 19C7 16 7 16 7 16Z" fill="currentColor" opacity="0.7" />
         <path d="M10 16.5C10 16.5 8 20 9.5 23.5C11 27 12 23 11 19.5C10 16.5 10 16.5 10 16.5Z" fill="#ff7df8" opacity="0.85" />
         <path d="M14 16.5C14 16.5 16 20 14.5 23.5C13 27 12 23 13 19.5C14 16.5 14 16.5 14 16.5Z" fill="#ff7df8" opacity="0.85" />
         <path d="M17 16C17 16 19 19 18 22C17 25 15 22 16 19C17 16 17 16 17 16Z" fill="currentColor" opacity="0.7" />
-
-        {/* Fine stinging threads */}
-        <path d="M5 13C4 16 3 20 4.5 24" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
-        <path d="M19 13C20 16 21 20 19.5 24" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" opacity="0.6" />
-        <path d="M12 14C12 18 10 21 12 25" stroke="#ff7df8" strokeWidth="1" strokeLinecap="round" strokeDasharray="1 2" />
     </svg>
 );
 
 const ItemDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [item, setItem] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
 
-    // In a real app we'd fetch or find by ID
-    const item = jellyfishes.find(j => j.id === parseInt(id)) || jellyfishes[0];
+    React.useEffect(() => {
+        async function fetchJelly() {
+            try {
+                const res = await fetch(`${API}/jellyfish/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setItem(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch jellyfish detail:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchJelly();
+    }, [id]);
+
+    const criteria = React.useMemo(() => {
+        if (!item || !item.criteria_values) return {};
+        return item.criteria_values.reduce((acc, cv) => {
+            acc[cv.criteria_field?.name] = cv.value;
+            return acc;
+        }, {});
+    }, [item]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-bg-dark flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-accent-purple/20 border-t-accent-purple rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    if (!item) {
+        return (
+            <div className="min-h-screen bg-bg-dark flex flex-col items-center justify-center text-white/40 gap-4">
+                <span className="text-6xl">🪼</span>
+                <p>Jellyfish not found.</p>
+                <button onClick={() => navigate(-1)} className="text-accent-blue font-bold">Go Back</button>
+            </div>
+        );
+    }
+
+    // Danger level logic (clamped between 1-5 for display)
+    const dangerValue = parseInt(criteria['Dangerosity'] || criteria['Danger'] || 0);
+    const dangerArray = Array.from({ length: Math.min(5, Math.max(1, dangerValue)) });
 
     return (
         <motion.div
@@ -61,12 +93,12 @@ const ItemDetail = () => {
         >
             {/* Top Image Section */}
             <div className="relative w-full h-[40vh] min-h-[300px] rounded-b-[2.5rem] overflow-hidden">
-                <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
+                <img src={item.img} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
 
                 {/* Back Button */}
                 <button
                     onClick={() => navigate(-1)}
-                    className="absolute top-6 left-5 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-bg-dark/40 border border-white/40 backdrop-blur-md hover:bg-white/20 transition-all cursor-pointer"
+                    className="absolute top-6 left-5 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-bg-dark/40 border border-white/40 backdrop-blur-md hover:bg-white/20 transition-all cursor-pointer"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -75,9 +107,9 @@ const ItemDetail = () => {
 
                 {/* Gradient Overlay for Title */}
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/20 to-transparent flex items-end justify-center pb-6">
-                    <h1 className="text-3xl font-black tracking-wide drop-shadow-xl">
+                    <h1 className="text-3xl font-black tracking-wide drop-shadow-xl text-center px-4">
                         <span className="text-accent-purple drop-shadow-[0_0_15px_rgba(174,48,208,0.8)]">{item.name} </span>
-                        <span className="text-accent-blue drop-shadow-[0_0_15px_rgba(28,95,209,0.8)]">{item.type}</span>
+                        <span className="text-accent-blue drop-shadow-[0_0_15px_rgba(28,95,209,0.8)]">Jellyfish</span>
                     </h1>
                 </div>
             </div>
@@ -88,38 +120,54 @@ const ItemDetail = () => {
                     <div className="bg-bg-dark h-full w-full rounded-[1.5rem] p-5">
 
                         {/* Stats List */}
-                        <ul className="space-y-2.5 text-[0.95rem]">
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Size :</strong> <span className="text-white/80 ml-1.5">{item.size}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Deep :</strong> <span className="text-white/80 ml-1.5">{item.deep}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Color :</strong> <span className="text-white/80 ml-1.5">{item.color}</span></li>
+                        <ul className="space-y-4 text-[0.95rem]">
                             <li className="flex items-center">
                                 <JellyfishIcon />
-                                <strong className="text-white">Danger :</strong>
-                                <span className="flex items-center ml-2 gap-1.5">
-                                    {item.danger.split('').map((_, i) => (
+                                <strong className="text-white">Size:</strong> 
+                                <span className="text-white/80 ml-2">{criteria['Size'] || 'N/A'} cm</span>
+                            </li>
+                            <li className="flex items-center">
+                                <JellyfishIcon />
+                                <strong className="text-white">Deep:</strong> 
+                                <span className="text-white/80 ml-2">{item.depth * 100} m</span>
+                            </li>
+                            <li className="flex items-center">
+                                <JellyfishIcon />
+                                <strong className="text-white">Dangerosity:</strong>
+                                <span className="flex items-center ml-3 gap-1.5">
+                                    {dangerArray.map((_, i) => (
                                         <DetailedJellyfishIcon key={i} className="opacity-95" />
                                     ))}
+                                    {dangerArray.length === 0 && <span className="text-white/30 text-xs italic">Harmless</span>}
                                 </span>
                             </li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Diameter :</strong> <span className="text-white/80 ml-1.5">{item.diameter}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Light :</strong> <span className="text-white/80 ml-1.5">{item.light}</span></li>
+                            <li className="flex items-center">
+                                <JellyfishIcon />
+                                <strong className="text-white">Diameter:</strong> 
+                                <span className="text-white/80 ml-2">{criteria['Diameter'] || 'N/A'} cm</span>
+                            </li>
+                            <li className="flex items-center">
+                                <JellyfishIcon />
+                                <strong className="text-white">Bioluminescent:</strong> 
+                                <span className="text-white/80 ml-2">{parseInt(criteria['Bioluminescent']) === 1 ? 'Yes' : 'No'}</span>
+                            </li>
                         </ul>
 
                         {/* Description */}
-                        <div className="mt-6">
-                            <h3 className="font-bold text-white mb-1"><strong className="text-white">Description :</strong></h3>
-                            <p className="text-white/80 text-sm leading-relaxed">
-                                There is a beautiful jellyfish ...There is a beautiful jellyfish ...There is a beautiful
-                                jellyfish ...There is a beautiful jellyfish ...There is a beautiful jellyfish ...There is a
-                                beautiful jellyfish ...There is a beautiful jellyfish ...There is a beautiful jellyfish ...
-                            </p>
-                        </div>
+                        {item.collection?.description && (
+                            <div className="mt-8 border-t border-white/5 pt-6">
+                                <h3 className="font-bold text-white mb-2 underline decoration-accent-purple/40 underline-offset-4">Description :</h3>
+                                <p className="text-white/80 text-sm leading-relaxed italic">
+                                    {item.collection.description}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Remove from collection button */}
+                {/* Remove from collection button (Visual placeholder) */}
                 <div className="flex justify-center mt-6 mb-2">
-                    <button className="px-5 py-1.5 rounded-full text-xs font-medium text-white/50 border border-white/10 bg-transparent transition-all duration-300 hover:text-white hover:border-accent-purple/60 hover:shadow-[0_0_15px_rgba(174,48,208,0.2)]">
+                    <button className="px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-white/30 border border-white/10 bg-transparent transition-all duration-300 hover:text-white hover:border-accent-purple/60 hover:shadow-[0_0_15px_rgba(174,48,208,0.2)]">
                         Remove from collection
                     </button>
                 </div>

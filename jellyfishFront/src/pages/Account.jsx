@@ -31,10 +31,17 @@ function Account() {
 
     useEffect(() => {
         async function fetchMyJellies() {
-            if (!user || !token) return;
             try {
+                // Ensure we have a valid ID (handle possible nesting from backend)
+                const userId = user.id || user.data?.id || user.user?.id;
+                
+                if (!userId) {
+                    console.error("No user ID found", user);
+                    return;
+                }
+
                 // Fetch the user's collections structure
-                const res = await fetch(`http://localhost:8000/api/user/${user.id}/collection`, {
+                const res = await fetch(`http://localhost:8000/api/user/${userId}/collection`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
@@ -74,21 +81,25 @@ function Account() {
     }, [user, token]);
 
     return (
-        <div className="w-full flex-1 flex flex-col gap-12 bg-bg-dark relative">
+        <div className="w-full flex-1 flex flex-col gap-12 bg-bg-dark relative overflow-hidden">
+            {/* Decorative background glows */}
+            <div className="absolute top-40 -right-20 w-80 h-80 bg-accent-purple/10 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-40 -left-20 w-64 h-64 bg-accent-blue/10 blur-[100px] rounded-full pointer-events-none" />
+
             {/* Top rounded profile header */}
             <div
-                className="relative flex-1 flex flex-col bg-gradient-to-b from-[#21234F] to-[#121338] rounded-b-[40px] border-b border-accent-purple/30 shadow-[0_10px_30px_rgba(174,48,208,0.1)]"
+                className="relative flex-1 flex flex-col bg-gradient-to-b from-[#2a1b4d] via-[#121338] to-[#0B0D28] rounded-b-[40px] border-b border-accent-purple/40 shadow-[0_10px_30px_rgba(174,48,208,0.2)]"
             >
                 <button
-                    onClick={() => navigate("/")}
-                    className="absolute top-4 left-4 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white/80 hover:text-white"
+                    onClick={() => navigate(-1)}
+                    className="absolute top-4 left-4 z-20 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white/80 hover:text-white"
                 >
                     <ArrowLeft size={24} />
                 </button>
 
                 <button
                     onClick={() => navigate("/edit-profile")}
-                    className="absolute top-4 right-4 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white/80 hover:text-white"
+                    className="absolute top-4 right-4 z-20 w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 hover:bg-white/20 active:scale-95 transition-all text-white/80 hover:text-white"
                 >
                     <Pencil size={24} />
                 </button>
@@ -96,7 +107,7 @@ function Account() {
                 <img
                     src={profile?.avatar}
                     alt="User Avatar"
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover opacity-80"
                 />
             </div>
 

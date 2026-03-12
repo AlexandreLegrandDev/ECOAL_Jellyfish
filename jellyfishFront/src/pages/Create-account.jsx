@@ -1,12 +1,13 @@
 import React, {useState} from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useAuth} from "../contexts/auth-context.jsx";
-import {LockKeyhole, Mail, User,} from "lucide-react";
+import {LockKeyhole, Mail, User, ArrowLeft} from "lucide-react";
 import BackgroundAnimation from "../components/background-animation.jsx";
 import Toast from "../components/toast-message.jsx";
 
 function Register() {
     const {register, showNotification} = useAuth();
+    const navigate = useNavigate();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -50,6 +51,15 @@ function Register() {
 
     return (
         <BackgroundAnimation>
+            <div className="absolute top-6 left-6 z-50">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all cursor-pointer"
+                >
+                    <ArrowLeft size={20} color="white" />
+                </button>
+            </div>
+
             <div className="flex-1 flex flex-col items-center gap-12 mt-10 overflow-y-auto">
                 <img
                     src="/jelly.svg"

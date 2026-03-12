@@ -1,48 +1,146 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header.jsx';
-import cardImage from '../assets/images/moon_jellyfish_card.png';
 import BackgroundAnimation from "../components/background-animation.jsx";
 import Button from "../components/button.jsx";
+import CollectionButton from "../components/collection-button.jsx";
+import { useAuth } from "../contexts/auth-context.jsx";
+
+const API = 'http://localhost:8000/api';
 
 const Home = () => {
+  const { token, showNotification } = useAuth();
+  const navigate = useNavigate();
+  const isLoggedIn = !!token;
+  const [collections, setCollections] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const scrollRef = React.useRef(null);
+
+  useEffect(() => {
+    async function fetchCollections() {
+      try {
+        const res = await fetch(`${API}/random`);
+        if (res.ok) {
+          const data = await res.json();
+          setCollections(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch public collections:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCollections();
+  }, []);
+
+  // Triplicate the collections for the infinite effect
+  const displayCollections = React.useMemo(() => 
+    collections.length > 0 ? [...collections, ...collections, ...collections] : []
+  , [collections]);
+
+  // Infinite scroll logic
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer || collections.length === 0 || isLoading) return;
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainer;
+      
+      // Use a wider buffer for jumps to avoid flickering/clashes with snap
+      if (scrollLeft + clientWidth >= scrollWidth - 5) {
+        scrollContainer.scrollLeft = scrollWidth / 3;
+      } else if (scrollLeft <= 5) {
+        scrollContainer.scrollLeft = scrollWidth / 3;
+      }
+    };
+
+    // Use a small timeout to ensure DOM is fully painted before setting initial scroll
+    const timeoutId = setTimeout(() => {
+      if (scrollContainer) {
+        scrollContainer.scrollLeft = scrollContainer.scrollWidth / 3;
+      }
+    }, 50);
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => {
+      clearTimeout(timeoutId);
+      scrollContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [collections.length, isLoading]);
+
+  const handleCollectionClick = (collId) => {
+    if (isLoggedIn) {
+      navigate(`/collection/${collId}`);
+    } else {
+      if (showNotification) {
+        showNotification("Please log in to view this collection", "alert");
+      }
+      navigate('/login');
+    }
+  };
+
+  const handleSeeMore = () => {
+    if (isLoggedIn) {
+      navigate('/collection');
+    } else {
+      if (showNotification) {
+        showNotification("Please log in to explore the full collection", "alert");
+      }
+      navigate('/login');
+    }
+  };
+
   return (
     <BackgroundAnimation>
       <Header />
 
       <div
         className="relative z-10 flex flex-col items-center justify-center flex-1 px-5 text-center">
-        <h1 className="text-4xl font-extrabold leading-tight md:text-6xl mb-10 max-w-[90%]">
-          Welcome to <span>Jelly Deep</span>
+        <h1 className="text-4xl font-extrabold leading-tight md:text-7xl mb-10 max-w-[90%] text-white">
+          Welcome to <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple drop-shadow-[0_0_20px_rgba(245,61,255,0.4)]">Jelly Deep</span>
         </h1>
       </div>
 
-      <section className="relative flex flex-col gap-4">
-        <h2 className="text-2xl font-bold text-center md:text-3xl mb-10">Public Collections</h2>
+      <section className="relative flex flex-col gap-4 w-full overflow-hidden">
+        <h2 className="text-2xl font-bold text-center md:text-3xl mb-10 text-white/90 px-5">
+          Public <span className="text-accent-purple/80">Collections</span>
+        </h2>
 
         <div
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-12 max-w-[500px] md:max-w-[800px] mx-auto">
-          {[1, 2].map((i) => (
-            <div key={i}
-              className="flex flex-col overflow-hidden transition-all duration-300 border rounded-3xl glass border-white/20 hover:-translate-y-2 hover:border-accent-purple hover:shadow-xl group">
-              <div className="overflow-hidden aspect-square">
-                <img
-                  src={cardImage}
-                  alt="Moon Jellyfish"
-                  className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+          ref={scrollRef}
+          className="flex flex-row gap-2 mb-12 w-full overflow-x-auto pb-6 custom-scrollbar snap-x px-5 select-none">
+          {isLoading ? (
+            <div className="flex-1 flex flex-col items-center py-10 opacity-40">
+              <div className="w-6 h-6 border-2 border-white/20 border-t-white/80 rounded-full animate-spin mb-2" />
+              <p className="text-sm">Finding collections...</p>
+            </div>
+          ) : collections.length === 0 ? (
+            <p className="flex-1 text-center text-white/30 italic">No collections found.</p>
+          ) : (
+            displayCollections.map((coll, idx) => (
+              <div
+                key={`${coll.id}-infinite-${idx}`}
+                className="min-w-[200px] md:min-w-[240px] snap-center shrink-0"
+              >
+                <CollectionButton
+                  title={coll.name}
+                  image={coll.img}
+                  onClick={() => handleCollectionClick(coll.id)}
+                  height={180}
                 />
               </div>
-              <div className="p-4 text-center bg-white/5">
-                <span className="text-base font-medium text-white/90">Moon jellyfish</span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        <Button
-          title="See more"
-          navigateTo="/collection"
-        />
+        <div className="pb-10">
+          <Button
+            title="See more"
+            onClick={handleSeeMore}
+          />
+        </div>
+
 
         <div className="absolute bottom-0 left-0 w-full leading-[0] pointer-events-none">
           <svg className="w-full h-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">

@@ -27,8 +27,8 @@ const Header = ({title, returnTo = "/"}) => {
             if (type === "error") return "border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] bg-red-500/10";
             return "border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-yellow-500/10";
         }
-        if (isMenuOpen) return "border-gradient bg-black/90 shadow-[0_0_30px_rgba(0,0,0,0.4)]";
-        return "border-gradient bg-black/40";
+        if (isMenuOpen) return "border-white/20 bg-black/20 shadow-[0_0_30px_rgba(0,0,0,0.2)]";
+        return "border-white/10 bg-white/5";
     };
 
     return (
@@ -57,7 +57,7 @@ const Header = ({title, returnTo = "/"}) => {
                                 size={26}
                                 color="white"
                                 className="cursor-pointer hover:scale-110 transition-transform p-1 bg-white/5 rounded-lg"
-                                onClick={() => navigate(`${returnTo}`)}
+                                onClick={() => navigate(-1)}
                             />
                         )}
                     </div>
@@ -121,7 +121,7 @@ const Header = ({title, returnTo = "/"}) => {
                                         Manage Account
                                     </button>
                                     <button
-                                        className="w-full text-white text-sm font-black py-4 rounded-2xl transition-all bg-gradient-to-r from-accent-purple to-accent-blue shadow-[0_10px_20px_rgba(168,85,247,0.3)] active:scale-[0.98]"
+                                        className="w-full text-white/60 text-sm font-bold py-4 rounded-2xl transition-all bg-white/5 hover:bg-white/10 hover:text-white border border-white/5 hover:border-white/10 active:scale-[0.98]"
                                         onClick={() => {
                                             setIsMenuOpen(false);
                                             logout();

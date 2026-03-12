@@ -7,7 +7,7 @@ import {LockKeyhole, Mail} from "lucide-react";
 import Toast from "../components/toast-message.jsx";
 
 function Login() {
-    const {login} = useAuth();
+    const {login, showNotification} = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
@@ -21,6 +21,7 @@ function Login() {
 
         try {
             await login(email, password);
+            showNotification("Login feito com sucesso!", "success");
         } catch (err) {
             setError(err.message);
 

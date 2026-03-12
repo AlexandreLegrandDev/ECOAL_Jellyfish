@@ -44,7 +44,6 @@ const Home = () => {
           navigateTo="/collection"
         />
 
-        Wave Decoration
         <div className="absolute bottom-0 left-0 w-full leading-[0] pointer-events-none">
           <svg className="w-full h-20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
             <path fill="#ffffff10"

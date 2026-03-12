@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-dark: #050529;
+  --color-accent-purple: #F53DFF;
+  --color-accent-blue: #0081FD;
+  --font-outfit: "Outfit", sans-serif;
+}
+
+:root {
+  font-family: var(--font-outfit);
+}
+
+body {
+  @apply bg-bg-dark m-0 min-h-screen text-white overflow-x-hidden pt-0;
+}
+
+#root {
+  @apply w-full;
+}
+
+/* Glassmorphism utility for reuse */
+.glass {
+  @apply bg-white/10 border border-white/20 backdrop-blur-lg;
+}

@@ -203,8 +203,8 @@ export default function SignIn() {
                         <p className="text-white font-light text-[1rem]">
 
                             {isLogin
-                                ? "Don't have an account? "
-                                : "Already sign in ? "
+                                ? "Don't have an account ? "
+                                : "Already signed in ? "
                             }
                             <button
                                 type="button"

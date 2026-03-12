@@ -43,4 +43,5 @@
   --color-blue-50: oklch(61.58% 0.207 255.61);
   --color-blue-100: oklch(28.18% 0.162 267.92);
   --color-purple-200: oklch(70.78% 0.291 325.78);
+  --color-gradient: linear-gradient(90deg, var(--color-blue-50), var(--color-purple-200));
 }

@@ -1,5 +1,6 @@
 import returnIcon from '../../assets/return.png';
-import { useRef } from "react"; // Ajout de useRef
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -7,8 +8,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 function User() {
-  const containerRef = useRef(); // Référence pour le parent
-  const wrapRef = useRef();      // Référence pour l'élément qui défile
+  const navigate = useNavigate();
+  const containerRef = useRef();
+  const wrapRef = useRef();
 
   useGSAP(() => {
     const wrap = wrapRef.current;
@@ -38,6 +40,12 @@ function User() {
         <div className="w-full bg-[#0a1930] py-12 px-6 text-white relative rounded-b-3xl">
           <button className="absolute top-6 left-6 bg-gradient-to-br from-cyan-500/30 to-fuchsia-500/30 border border-cyan-500/40 rounded-lg p-3 hover:scale-105 transition-transform">
             <img src={returnIcon} className="w-5 h-5" alt="return" />
+          </button>
+          <button 
+            onClick={() => navigate('/modifyCollection')}
+            className="absolute top-6 right-6 bg-gradient-to-br from-cyan-500/30 to-fuchsia-500/30 border border-cyan-500/40 rounded-lg p-3 hover:scale-105 transition-transform"
+          >
+            <i className='bx bx-edit text-white text-xl'></i>
           </button>
           <div className="flex flex-col items-center gap-6">
             <div className="w-32 h-32 rounded-full flex overflow-hidden border-2 border-cyan-500 items-center justify-center">

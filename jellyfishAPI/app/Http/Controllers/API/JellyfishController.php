@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\CriteriaField;
+use App\Models\CriteriaFieldValue;
 use App\Models\Jellyfish;
 use Illuminate\Http\Request;
 
@@ -44,9 +46,9 @@ class JellyfishController extends Controller
 
         if (isset($validated['criteria'])) {
             foreach ($validated['criteria'] as $field => $value) {
-                $criteriaField = \App\Models\CriteriaField::where('name', $field)->first();
+                $criteriaField = CriteriaField::where('name', $field)->first();
                 if ($criteriaField) {
-                    \App\Models\CriteriaFieldValue::create([
+                    CriteriaFieldValue::create([
                         'id_jellyfish' => $jellyfish->id,
                         'id_criteria_fields' => $criteriaField->id,
                         'value' => $value

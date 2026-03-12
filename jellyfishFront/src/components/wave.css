@@ -8,7 +8,7 @@ footer{
     position: absolute;
     bottom: 0;
     width: 100%;
-    background: #fefefe40;
+    background: #c51ddf5e;
     animation: wave 6s ease-in-out infinite;
     z-index: 999;
 }

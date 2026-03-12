@@ -1,15 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import heroImage from '../assets/images/hero_jellyfish.png';
 import cardImage from '../assets/images/moon_jellyfish_card.png';
 
-// Mock data (we can assume this would be fetched based on the ID)
-const jellyfishes = [
-    { id: 1, name: "Purple", type: "Jellyfish", image: cardImage, size: "25 cm", deep: "200 m", color: "purple", danger: "***", diameter: "10 cm", light: "Yes" },
-    { id: 2, name: "Moon", type: "Jellyfish", image: cardImage, size: "20 cm", deep: "150 m", color: "blue", danger: "*", diameter: "15 cm", light: "No" },
-    { id: 3, name: "Pink", type: "Jellyfish", image: cardImage, size: "30 cm", deep: "300 m", color: "pink", danger: "**", diameter: "12 cm", light: "Yes" },
-];
+// Mock data replaced by dynamic fetch
 
 // Small generic Jellyfish Icon SVG for bullets
 const JellyfishIcon = ({ className = "mr-2" }) => (
@@ -47,9 +42,68 @@ const DetailedJellyfishIcon = ({ className = "" }) => (
 const ItemDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    
+    const [item, setItem] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // In a real app we'd fetch or find by ID
-    const item = jellyfishes.find(j => j.id === parseInt(id)) || jellyfishes[0];
+    React.useEffect(() => {
+        const fetchItem = async () => {
+            try {
+                const response = await fetch(`http://localhost:8000/api/jellyfish/${id}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch jellyfish details');
+                }
+                const data = await response.json();
+                setItem(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchItem();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-bg-dark text-white">
+                <p>Loading jellyfish data...</p>
+            </div>
+        );
+    }
+
+    if (error || !item) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-bg-dark text-white">
+                <p className="text-red-400 mb-4">{error || "Jeelyfish not found"}</p>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition-all"
+                >
+                    Go Back
+                </button>
+            </div>
+        );
+    }
+
+    // Helper to get criteria value
+    const getCriteria = (name) => {
+        const criteria = item.criteria_values?.find(c => c.criteria_field?.name === name);
+        return criteria ? criteria.value : 'N/A';
+    };
+
+    const size = getCriteria('Size');
+    const diameter = getCriteria('Diameter');
+    const color = getCriteria('Color');
+    const dangerValue = parseInt(getCriteria('Dangerosity')) || 1;
+    const isBioluminescent = getCriteria('Bioluminescent') === 1 ? 'Yes' : (getCriteria('Bioluminescent') === 0 ? 'No' : 'N/A');
+
+    // Make sure we have a valid image URL
+    const imageUrl = item.img && item.img.startsWith('http') 
+        ? item.img 
+        : `http://localhost:8000/storage/${item.img}`;
 
     return (
         <motion.div
@@ -60,8 +114,8 @@ const ItemDetail = () => {
             className="flex flex-col min-h-screen bg-bg-dark text-white relative pb-10"
         >
             {/* Top Image Section */}
-            <div className="relative w-full h-[40vh] min-h-[300px] rounded-b-[2.5rem] overflow-hidden">
-                <img src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
+            <div className="relative w-full h-[40vh] min-h-[300px] rounded-b-[2.5rem] overflow-hidden bg-bg-dark/50">
+                <img src={imageUrl} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
 
                 {/* Back Button */}
                 <button
@@ -77,7 +131,7 @@ const ItemDetail = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/20 to-transparent flex items-end justify-center pb-6">
                     <h1 className="text-3xl font-black tracking-wide drop-shadow-xl">
                         <span className="text-accent-purple drop-shadow-[0_0_15px_rgba(174,48,208,0.8)]">{item.name} </span>
-                        <span className="text-accent-blue drop-shadow-[0_0_15px_rgba(28,95,209,0.8)]">{item.type}</span>
+                        <span className="text-accent-blue drop-shadow-[0_0_15px_rgba(28,95,209,0.8)]">{item.collection?.name || ''}</span>
                     </h1>
                 </div>
             </div>
@@ -89,29 +143,27 @@ const ItemDetail = () => {
 
                         {/* Stats List */}
                         <ul className="space-y-2.5 text-[0.95rem]">
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Size :</strong> <span className="text-white/80 ml-1.5">{item.size}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Deep :</strong> <span className="text-white/80 ml-1.5">{item.deep}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Color :</strong> <span className="text-white/80 ml-1.5">{item.color}</span></li>
+                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Size :</strong> <span className="text-white/80 ml-1.5">{size !== 'N/A' ? `${size} cm` : size}</span></li>
+                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Depth Level :</strong> <span className="text-white/80 ml-1.5">{item.depth}</span></li>
+                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Color :</strong> <span className="text-white/80 ml-1.5">{color}</span></li>
                             <li className="flex items-center">
                                 <JellyfishIcon />
                                 <strong className="text-white">Danger :</strong>
                                 <span className="flex items-center ml-2 gap-1.5">
-                                    {item.danger.split('').map((_, i) => (
+                                    {Array.from({ length: Math.min(Math.max(dangerValue, 1), 5) }).map((_, i) => (
                                         <DetailedJellyfishIcon key={i} className="opacity-95" />
                                     ))}
                                 </span>
                             </li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Diameter :</strong> <span className="text-white/80 ml-1.5">{item.diameter}</span></li>
-                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Light :</strong> <span className="text-white/80 ml-1.5">{item.light}</span></li>
+                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Diameter :</strong> <span className="text-white/80 ml-1.5">{diameter !== 'N/A' ? `${diameter} cm` : diameter}</span></li>
+                            <li className="flex items-center"><JellyfishIcon /><strong className="text-white">Light :</strong> <span className="text-white/80 ml-1.5">{isBioluminescent}</span></li>
                         </ul>
 
                         {/* Description */}
                         <div className="mt-6">
                             <h3 className="font-bold text-white mb-1"><strong className="text-white">Description :</strong></h3>
                             <p className="text-white/80 text-sm leading-relaxed">
-                                There is a beautiful jellyfish ...There is a beautiful jellyfish ...There is a beautiful
-                                jellyfish ...There is a beautiful jellyfish ...There is a beautiful jellyfish ...There is a
-                                beautiful jellyfish ...There is a beautiful jellyfish ...There is a beautiful jellyfish ...
+                                {item.collection?.description || "No description provided."}
                             </p>
                         </div>
                     </div>

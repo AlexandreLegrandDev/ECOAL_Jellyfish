@@ -23,15 +23,15 @@ function User() {
       x: -scrollAmount,
       ease: "none",
       scrollTrigger: {
-        trigger: containerRef.current, // On déclenche sur le container parent
+        trigger: containerRef.current, 
         start: "top top",
-        end: `+=${scrollAmount}`, // Durée du scroll proportionnelle à la largeur
-        pin: true,                // Bloque l'écran pendant le scroll
-        scrub: 1,                 // Transition fluide avec le scroll
-        markers: false,           // Active à true pour déboguer
+        end: `+=${scrollAmount}`, 
+        pin: true,                
+        scrub: 1,                 
+        markers: false,           
       }
     });
-  }, { scope: containerRef }); // Scope pour limiter les sélecteurs
+  }, { scope: containerRef });
 
   return (
     <div ref={containerRef} className="bg-blue-950 min-h-screen overflow-x-hidden">

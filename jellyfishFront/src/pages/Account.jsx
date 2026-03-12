@@ -1,15 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/auth-context.jsx";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 import CollectionButton from "../components/collection-button.jsx";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 function Account() {
+    
     const { user, token, logout } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const jelliesContainerRef = useRef();
+    const jelliesWrapRef = useRef();
+    
+
+      useGSAP(() => {
+        const wrap = jelliesWrapRef.current;
+        
+        const scrollAmount = wrap.scrollWidth - window.innerWidth;
+    
+        gsap.to(wrap, {
+          x: -scrollAmount,
+          ease: "none",
+          scrollTrigger: {
+            trigger: jelliesContainerRef.current, 
+            start: "top top",
+            end: `+=${scrollAmount}`, 
+            pin: true,                
+            scrub: 1,                 
+            markers: false,           
+          }
+        });
+      }, { scope: jelliesContainerRef });
 
     // Since we mock the API response for visual purposes,
     // we can skip the fetch for now if we just want to show the UI
@@ -112,26 +140,29 @@ function Account() {
             </div>
 
             {/* "Your jellyfishes" section */}
-            <div className="px-6 mb-8">
-                <h2 className="text-2xl font-bold text-white mb-6 text-center">Your jellyfishes</h2>
-                <div className="grid grid-cols-2 gap-4">
-                    {/* Add button block */}
-                    <div 
-                        onClick={() => navigate('/create-jelly')}
-                        className="group flex flex-col items-center justify-center rounded-2xl border border-accent-purple/40 bg-[#292B57] shadow-[0_0_15px_rgba(174,48,208,0.2)] hover:shadow-[0_0_25px_rgba(174,48,208,0.5)] hover:border-accent-purple active:scale-95 transition-all duration-300 cursor-pointer min-h-[188px]"
-                    >
-                        <Plus size={80} className="text-white font-bold" strokeWidth={3} />
+            <div ref={jelliesContainerRef} className="overflow-x-hidden">
+                <div className="px-6 mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-6 text-center">Your jellyfishes</h2>
+                    <div ref={jelliesWrapRef} className="flex gap-6 flex-nowrap w-max">
+                        {/* Add button block */}
+                        <div 
+                            onClick={() => navigate('/create-jelly')}
+                            className="group flex flex-col items-center justify-center rounded-2xl border border-accent-purple/40 bg-[#292B57] shadow-[0_0_15px_rgba(174,48,208,0.2)] hover:shadow-[0_0_25px_rgba(174,48,208,0.5)] hover:border-accent-purple active:scale-95 transition-all duration-300 cursor-pointer min-h-[188px] w-64 flex-shrink-0"
+                        >
+                            <Plus size={80} className="text-white font-bold" strokeWidth={3} />
+                        </div>
+                        
+                        {myJellyfishes.map(item => (
+                            <div key={item.id} className="flex-shrink-0 w-64">
+                                <CollectionButton 
+                                    title={item.name} 
+                                    image={item.image} 
+                                    navigateTo={`/item/${item.id}`} 
+                                    height="140px" 
+                                />
+                            </div>
+                        ))}
                     </div>
-                    
-                    {myJellyfishes.map(item => (
-                        <CollectionButton 
-                            key={item.id}
-                            title={item.name} 
-                            image={item.image} 
-                            navigateTo={`/item/${item.id}`} 
-                            height="140px" 
-                        />
-                    ))}
                 </div>
             </div>
             

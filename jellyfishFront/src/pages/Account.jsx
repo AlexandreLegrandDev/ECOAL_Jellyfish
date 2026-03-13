@@ -23,19 +23,21 @@ function Account() {
 
         const scrollAmount = wrap.scrollWidth - window.innerWidth;
 
-        gsap.to(wrap, {
-            x: -scrollAmount,
-            ease: "none",
-            scrollTrigger: {
-                trigger: jelliesContainerRef.current,
-                start: "top top",
-                end: `+=${scrollAmount}`,
-                pin: true,
-                scrub: 1,
-                markers: false,
-            }
-        });
-    }, { scope: jelliesContainerRef });
+        if (scrollAmount > 0) {
+            gsap.to(wrap, {
+                x: -scrollAmount,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: jelliesContainerRef.current,
+                    start: "top top",
+                    end: `+=${scrollAmount}`,
+                    pin: true,
+                    scrub: 1,
+                    markers: false,
+                }
+            });
+        }
+    }, { scope: jelliesContainerRef, dependencies: [myJellyfishes] });
 
     useEffect(() => {
         setProfile({
@@ -74,27 +76,40 @@ function Account() {
                         if (collectionRes.ok) {
                             const collectionData = await collectionRes.json();
 
-                            if (collectionData.jellyfishes) {
+                            if (collectionData && collectionData.jellyfishes) {
                                 const displayJellies = collectionData.jellyfishes.map(j => ({
-                                    id: j.id,
-                                    name: j.name,
-                                    image: j.img
+                                    id: j?.id,
+                                    name: j?.name || "Unknown",
+                                    image: j?.img || null
                                 }));
 
                                 setMyJellyfishes(displayJellies);
                             } else {
                                 console.warn("No jellyfishes found in collection response");
+                                setMyJellyfishes([]);
                             }
                         }
+                    } else {
+                        setMyJellyfishes([]);
                     }
                 }
             } catch (err) {
                 console.error("Failed to fetch my jellies:", err);
+                setMyJellyfishes([]);
             }
         }
 
         fetchMyJellies();
     }, [user, token]);
+
+    if (!user) {
+        return (
+            <div className="w-full flex-1 flex flex-col items-center justify-center bg-bg-dark text-white gap-4">
+               <p className="text-xl">Authentication required. Please log in.</p>
+               <button onClick={() => navigate("/login")} className="px-6 py-2 bg-accent-purple rounded-full">Go to Login</button>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full flex-1 flex flex-col gap-12 bg-bg-dark relative">

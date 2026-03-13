@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
                 try {
                     // call the new /user/me endpoint which returns the authenticated user
                     const res = await fetch(`${API}/user/me`, {
-                        headers: { Authorization: `Bearer ${token}` },
+                        headers: { Authorization: `Bearer ${token}`, "Accept": "application/json" },
                     });
                     if (res.ok) {
                         const data = await res.json();
@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
         try {
             const res = await fetch(`${API}/login`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
 
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
                 setToken(receivedToken);
 
                 const userRes = await fetch(`${API}/user/me`, {
-                    headers: { Authorization: `Bearer ${receivedToken}` },
+                    headers: { Authorization: `Bearer ${receivedToken}`, "Accept": "application/json" },
                 });
                 const userDataResponse = await userRes.json();
                 let userData = userDataResponse.user || userDataResponse.data || userDataResponse;
@@ -84,7 +84,7 @@ export function AuthProvider({ children }) {
         try {
             const res = await fetch(`${API}/register`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
                 body: JSON.stringify({ name, email, password }),
             });
 
@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
             if (token) {
                 await fetch(`${API}/logout`, {
                     method: "POST",
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${token}`, "Accept": "application/json" },
                 });
             }
         } catch (err) {

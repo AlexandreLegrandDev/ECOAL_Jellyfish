@@ -80,7 +80,11 @@ class CollectionController extends Controller
 
     public function random()
     {
-        $collections = Collection::with(['jellyfishes'])->inRandomOrder()->limit(4)->get();
+        $collections = Collection::with(['jellyfishes'])
+            ->where('status', '=', '0')
+            ->inRandomOrder()
+            ->limit(2)
+            ->get();
 
         return response()->json($collections);
     }

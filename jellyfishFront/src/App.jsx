@@ -14,7 +14,7 @@ import CollectionDetail from "./collectionDetails.jsx";
 const AppContent = () => {
     // We remove the global DynamicIsland here because the Header will now handle it
     return (
-        <div className="w-full">
+        <div className="w-full min-h-screen flex flex-col">
             <Routes>
                 {/* Rotas Públicas */}
                 <Route path="/" element={<Home/>}/>

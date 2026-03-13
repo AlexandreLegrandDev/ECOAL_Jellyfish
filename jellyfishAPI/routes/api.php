@@ -15,7 +15,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 // convenience route that returns the currently authenticated user
 Route::middleware('auth:sanctum')->get('/user/me', function (Illuminate\Http\Request $request) {
-    return response()->json($request->user());
+    $user = $request->user();
+    if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://', 'https://'])) {
+        $user->avatar = url("/storage/{$user->avatar}");
+    }
+    return response()->json($user);
 });
 
 // Public routes (GET)
@@ -32,8 +36,6 @@ Route::get('/jellyfish/{jellyfish}', [JellyfishController::class, 'show']);
 
 Route::get('/location', [LocationController::class, 'index']);
 Route::get('/location/{location}', [LocationController::class, 'show']);
-
-Route::apiResource("user", UserController::class);
 
 // Protected routes (auth:sanctum)
 Route::middleware('auth:sanctum')->group(function () {
@@ -60,5 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // USER
     Route::get("/user/{user}/collection", [UserController::class, 'getUsersCollections']);
+    Route::apiResource("user", UserController::class);
+    Route::middleware('auth:sanctum')->put('/user', [UserController::class, 'update']);
 
 });

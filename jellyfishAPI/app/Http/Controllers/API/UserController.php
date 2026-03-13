@@ -5,7 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -14,7 +13,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        return response()->json(User::with('collection')->get());
+        $users = User::with('collection')->get()->map(function($u){
+            if ($u->avatar && !\Illuminate\Support\Str::startsWith($u->avatar, ['http://','https://'])) {
+                $u->avatar = url("/storage/{$u->avatar}");
+            }
+            return $u;
+        });
+        return response()->json($users);
     }
 
     /**
@@ -30,30 +35,46 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response()->json($user->load('collection'));
+        $user->load('collection');
+        if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://','https://'])) {
+            $user->avatar = url("/storage/{$user->avatar}");
+        }
+        return response()->json($user);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        // only allow users to update their own profile
-        if ($user->id !== auth()->id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|min:6'
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'avatar' => 'nullable|image|max:2048'
         ]);
 
-        if(isset($validated['password'])){
-            $validated['password'] = Hash::make($validated['password']);
+        if ($request->hasFile('avatar')) {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            // strip domain if accidentally stored
+            $path = preg_replace('#^https?://[^/]+/storage/#', '', $path);
+            $user->avatar = $path;
         }
-        
-        $user->update($validated);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        $user->save();
+
+        // prepare avatar url for response
+        if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://','https://'])) {
+            $user->avatar = url("/storage/{$user->avatar}");
+        }
 
         return response()->json($user);
     }

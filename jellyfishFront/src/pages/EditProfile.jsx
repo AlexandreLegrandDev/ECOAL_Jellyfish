@@ -11,8 +11,9 @@ const EditProfile = () => {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
-        avatar: "/jelly.svg",
+        avatar: "", // will be populated on effect from user or fallback
     });
+    const [avatarFile, setAvatarFile] = useState(null);
 
     // Update form when user data is available
     React.useEffect(() => {
@@ -45,6 +46,7 @@ const EditProfile = () => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData({ ...formData, avatar: reader.result });
@@ -62,33 +64,41 @@ const EditProfile = () => {
         setLoading(true);
         setError(null);
 
-        // resolve possibly wrapped user object (user.data, user.user, etc.)
-        const currentUser = user?.data || user?.user || user;
-        const userId = currentUser?.id;
-        if (!userId) {
-            setError("Impossible de déterminer l'utilisateur connecté.");
-            setLoading(false);
-            return;
-        }
-
         try {
-            const response = await fetch(`http://localhost:8000/api/user/${userId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
+            let body;
+            let headers = { Authorization: `Bearer ${token}`, "Accept": "application/json" };
 
-            if (!response.ok) {
-                throw new Error("Failed to update profile");
+            if (avatarFile) {
+                body = new FormData();
+                body.append('_method', 'PUT'); // Laravel doesn't parse files on real PUT
+                body.append("name", formData.name);
+                body.append("email", formData.email);
+                body.append("avatar", avatarFile);
+            } else {
+                body = JSON.stringify({
+                    name: formData.name,
+                    email: formData.email
+                });
+                headers["Content-Type"] = "application/json";
             }
 
-            const updatedUser = await response.json();
-            setUser(updatedUser);
-            showNotification("Perfil atualizado com sucesso!", "success");
+            // Use POST with _method=PUT for file uploads, PUT otherwise
+            // Send to /api/user (auth route, no userId needed)
+            const response = await fetch(`http://localhost:8000/api/user`, {
+                method: avatarFile ? "POST" : "PUT",
+                headers: headers,
+                body: body,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(data.message || "Update failed");
+
+            // Backend returns user with full avatar URL already transformed
+            setUser(data);
+            showNotification("Profile updated!", "success");
             navigate("/account");
+
         } catch (err) {
             setError(err.message);
             showNotification(err.message, "error");
@@ -127,12 +137,16 @@ const EditProfile = () => {
 
                 {/* Banner-style Avatar like in Account.jsx */}
                 <div className="relative w-full h-48 group cursor-pointer" onClick={triggerFilePicker}>
-                    <img
-                        src={formData.avatar}
-                        alt="User Avatar"
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.target.src = "/jelly.svg" }}
-                    />
+                    {formData.avatar && formData.avatar !== "/jelly.svg" ? (
+                        <img
+                            src={formData.avatar}
+                            alt="User Avatar"
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#2D2F6B] via-[#1C1E4A] to-[#0F1029]" />
+                    )}
                     {/* Subtle Overlay to indicate it's clickable */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                         <p className="text-white/0 group-hover:text-white/60 text-xs font-bold uppercase tracking-widest transition-all">Change Photo</p>

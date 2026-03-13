@@ -17,7 +17,7 @@ const Collection = () => {
     const [activeTab, setActiveTab] = useState('jellys');
     const [jellyfishes, setJellyfishes] = useState([]);
     const [collection, setCollection] = useState([]);
-    const cardsHeights = [220, 180, 260, 160, 240, 280, 200, 170];
+    const pinterestRatios = ['3/4', '1/1', '4/5', '3/5', '2/3', '5/4', '9/16', '5/7'];
 
     useEffect(() => {
         async function fetchData() {
@@ -100,21 +100,42 @@ const Collection = () => {
         };
     }, [isDragging]);
 
-    // Calculate background color based on depth
-    const getDynamicBackground = () => {
-        const factor = selectedDepth / 1000;
-        const hue = 210 + factor * 20; 
-        const saturation = 100 - factor * 40; 
-        const lightness = 50 - factor * 47; 
-        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    // Calculate ocean depth gradient — surface to abyss
+    const getOceanGradient = () => {
+        const factor = selectedDepth / 1000; // 0 = surface, 1 = abyss
+
+        // Surface colors (light cyan-blue) → Abyss colors (near-black)
+        const topH = 200 + factor * 15;
+        const topS = 85 - factor * 30;
+        const topL = Math.max(3, 45 - factor * 42);
+
+        const midH = 215 + factor * 15;
+        const midS = 75 - factor * 35;
+        const midL = Math.max(2, 30 - factor * 28);
+
+        const botH = 230 + factor * 10;
+        const botS = 60 - factor * 40;
+        const botL = Math.max(1, 12 - factor * 11);
+
+        return `linear-gradient(180deg, 
+            hsl(${topH}, ${topS}%, ${topL}%) 0%, 
+            hsl(${midH}, ${midS}%, ${midL}%) 40%, 
+            hsl(${botH}, ${botS}%, ${botL}%) 100%)`;
     };
 
 
     return (
         <div
-            className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-colors duration-1000 ease-in-out"
-            style={{ backgroundColor: getDynamicBackground() }}
+            className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-all duration-1000 ease-in-out"
+            style={{ background: getOceanGradient() }}
         >
+            {/* Surface light glow */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-1000"
+                style={{
+                    background: `radial-gradient(ellipse 120% 40% at 50% -5%, hsla(200, 80%, ${Math.max(5, 55 - (selectedDepth / 1000) * 50)}%, ${Math.max(0, 0.3 - (selectedDepth / 1000) * 0.28)}) 0%, transparent 100%)`,
+                }}
+            />
             <Header
                 title={activeTab === 'jellys' ? 'Jellys' : 'Collections'}
                 returnTo="/"
@@ -292,9 +313,17 @@ const Collection = () => {
                                         >
                                             <CollectionButton
                                                 title={item.name}
-                                                image={item.img}
+                                                image={
+                                                    activeTab === 'collections'
+                                                        ? (item.img && (item.img.startsWith('http') || item.img.startsWith('data:'))
+                                                            ? item.img
+                                                            : item.img ? `http://localhost:8000/storage/${item.img}` : null)
+                                                        : (item.img && (item.img.startsWith('http') || item.img.startsWith('data:'))
+                                                            ? item.img
+                                                            : item.img ? `http://localhost:8000/storage/${item.img}` : null)
+                                                }
                                                 navigateTo={activeTab === 'jellys' ? `/item/${item.id}` : `/collection/${item.id}`}
-                                                height={cardsHeights[idx % cardsHeights.length]}
+                                                aspectRatio={pinterestRatios[idx % pinterestRatios.length]}
                                             />
                                         </motion.div>
                                     ))}

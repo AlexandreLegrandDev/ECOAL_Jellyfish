@@ -21,7 +21,7 @@ function Login() {
 
         try {
             await login(email, password);
-            showNotification("Login feito com sucesso!", "success");
+            showNotification("Login successful !", "success");
         } catch (err) {
             setError(err.message);
 
@@ -48,7 +48,7 @@ function Login() {
                     <h1 className="text-5xl font-bold text-center">connect</h1>
                 </div>
 
-                <div className="w-full flex-1 flex flex-col">
+                <div className="w-full px-6 sm:px-10 flex-1 flex flex-col">
                     <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-4">
                         <div className="relative w-full h-16 flex flex-row items-center gap-4 p-4 rounded-full border border-[#0081FD] overflow-hidden">
                             <div className="absolute inset-0 bg-black opacity-50 backdrop-blur-md rounded-full" />

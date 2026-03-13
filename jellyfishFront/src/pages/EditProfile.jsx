@@ -64,18 +64,9 @@ const EditProfile = () => {
         setLoading(true);
         setError(null);
 
-        // need the id of the authenticated user
-        const currentUser = user?.data || user?.user || user;
-        const userId = currentUser?.id;
-        if (!userId) {
-            setError("Cannot identify current user");
-            setLoading(false);
-            return;
-        }
-
         try {
             let body;
-            let headers = { Authorization: `Bearer ${token}` };
+            let headers = { Authorization: `Bearer ${token}`, "Accept": "application/json" };
 
             if (avatarFile) {
                 body = new FormData();
@@ -91,7 +82,9 @@ const EditProfile = () => {
                 headers["Content-Type"] = "application/json";
             }
 
-            const response = await fetch(`http://localhost:8000/api/user/${userId}`, {
+            // Use POST with _method=PUT for file uploads, PUT otherwise
+            // Send to /api/user (auth route, no userId needed)
+            const response = await fetch(`http://localhost:8000/api/user`, {
                 method: avatarFile ? "POST" : "PUT",
                 headers: headers,
                 body: body,
@@ -101,6 +94,7 @@ const EditProfile = () => {
 
             if (!response.ok) throw new Error(data.message || "Update failed");
 
+            // Backend returns user with full avatar URL already transformed
             setUser(data);
             showNotification("Profile updated!", "success");
             navigate("/account");
@@ -143,12 +137,16 @@ const EditProfile = () => {
 
                 {/* Banner-style Avatar like in Account.jsx */}
                 <div className="relative w-full h-48 group cursor-pointer" onClick={triggerFilePicker}>
-                    <img
-                        src={formData.avatar}
-                        alt="User Avatar"
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.target.src = user?.avatar || "/jelly.svg" }}
-                    />
+                    {formData.avatar && formData.avatar !== "/jelly.svg" ? (
+                        <img
+                            src={formData.avatar}
+                            alt="User Avatar"
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[#2D2F6B] via-[#1C1E4A] to-[#0F1029]" />
+                    )}
                     {/* Subtle Overlay to indicate it's clickable */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                         <p className="text-white/0 group-hover:text-white/60 text-xs font-bold uppercase tracking-widest transition-all">Change Photo</p>

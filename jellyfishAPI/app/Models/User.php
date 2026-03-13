@@ -20,8 +20,8 @@ class User extends Authenticatable
         static::created(function ($user) {
 
             $user->collection()->create([
-                'name' => 'My first collection',
-                'description' => 'My first collection',
+                'name' => $user->name . "'s collection",
+                'description' => $user->name . "'s collection",
                 'img' => 'https://upload.wikimedia.org/wikipedia/commons/4/44/Jelly_cc11.jpg',
                 'status' => true
             ]);

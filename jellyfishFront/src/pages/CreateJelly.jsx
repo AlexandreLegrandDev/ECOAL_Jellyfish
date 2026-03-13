@@ -119,7 +119,13 @@ function CreateJelly() {
       id_collection: collectionId,
       name: jellyName || "Custom Jelly",
       img: imagePreview || "https://images.unsplash.com/photo-1549558549-415fe4c37b60?auto=format&fit=crop&q=80&w=400",
-      depth: dangerLevel === 0 ? 1 : dangerLevel,
+      depth: parseInt(deep) || 1,
+      criteria: {
+        ...(size !== "" && { Size: parseFloat(size) }),
+        ...(diameter !== "" && { Diameter: parseFloat(diameter) }),
+        ...(dangerLevel > 0 && { Dangerosity: dangerLevel }),
+        Bioluminescent: isLightYes ? 1 : 0,
+      }
     };
 
     try {

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "./contexts/auth-context.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import { Trash2 } from "lucide-react";
 import Header from "./components/Header.jsx";
 import CollectionButton from "./components/collection-button.jsx";
 import cardImage from "./assets/images/moon_jellyfish_card.png";
@@ -8,6 +10,7 @@ import cardImage from "./assets/images/moon_jellyfish_card.png";
 const CollectionDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user, token } = useAuth();
 
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +28,7 @@ const CollectionDetail = () => {
                 const heights = [220, 180, 260, 160, 240, 280, 200, 170];
                 const formattedItems = (data.jellyfishes || []).map((j, i) => {
                     const imgUrl = j.img
-                        ? (j.img.startsWith("http")
+                        ? (j.img.startsWith("http") || j.img.startsWith("data:")
                             ? j.img
                             : `http://localhost:8000/storage/${j.img}`)
                         : cardImage;
@@ -54,6 +57,24 @@ const CollectionDetail = () => {
             return j.depth === mappedLevel;
         });
     }, [selectedDepth, items]);
+
+    async function handleDeleteJellyfish(jellyfishId) {
+        if (!token) return;
+        try {
+            const res = await fetch(`http://localhost:8000/api/jellyfish/${jellyfishId}`, {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Accept": "application/json"
+                }
+            });
+            if (res.ok) {
+                setItems(prev => prev.filter(item => item.id !== jellyfishId));
+            }
+        } catch (err) {
+            console.error("Failed to delete jellyfish:", err);
+        }
+    }
 
     const updateDepthFromPointer = (e, rect) => {
         const y = e.clientY - rect.top;
@@ -90,25 +111,46 @@ const CollectionDetail = () => {
         };
     }, [isDragging]);
 
-    const getDynamicBackground = () => {
+    // Calculate ocean depth gradient — surface to abyss
+    const getOceanGradient = () => {
         const factor = selectedDepth / 1000;
-        const hue = 210 + factor * 20; 
-        const saturation = 100 - factor * 40; 
-        const lightness = 50 - factor * 47; 
-        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+        const topH = 200 + factor * 15;
+        const topS = 85 - factor * 30;
+        const topL = Math.max(3, 45 - factor * 42);
+
+        const midH = 215 + factor * 15;
+        const midS = 75 - factor * 35;
+        const midL = Math.max(2, 30 - factor * 28);
+
+        const botH = 230 + factor * 10;
+        const botS = 60 - factor * 40;
+        const botL = Math.max(1, 12 - factor * 11);
+
+        return `linear-gradient(180deg, 
+            hsl(${topH}, ${topS}%, ${topL}%) 0%, 
+            hsl(${midH}, ${midS}%, ${midL}%) 40%, 
+            hsl(${botH}, ${botS}%, ${botL}%) 100%)`;
     };
 
     return (
         <div
-            className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-colors duration-1000 ease-in-out"
-            style={{ backgroundColor: getDynamicBackground() }}
+            className="relative z-10 w-full min-h-dvh flex flex-col p-4 gap-12 overflow-y-auto transition-all duration-1000 ease-in-out"
+            style={{ background: getOceanGradient() }}
         >
+            {/* Surface light glow */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-1000"
+                style={{
+                    background: `radial-gradient(ellipse 120% 40% at 50% -5%, hsla(200, 80%, ${Math.max(5, 55 - (selectedDepth / 1000) * 50)}%, ${Math.max(0, 0.3 - (selectedDepth / 1000) * 0.28)}) 0%, transparent 100%)`,
+                }}
+            />
             <Header title="Collection Details" returnTo="/collection" />
 
             {/* Spotlight Preview Overlay */}
             <AnimatePresence>
                 {hoveredJelly && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: -20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: -20 }}
@@ -177,7 +219,7 @@ const CollectionDetail = () => {
                                     whileHover="hover"
                                     initial="initial"
                                 >
-                                    <motion.div 
+                                    <motion.div
                                         className="relative w-5 h-5 rounded-full overflow-hidden border border-white/20 shadow-lg"
                                         variants={{
                                             initial: { scale: 1, opacity: 0.3 },
@@ -248,7 +290,16 @@ const CollectionDetail = () => {
                                                 image={item.image}
                                                 navigateTo={`/item/${item.id}`}
                                                 height={item.height}
-                                            />
+                                            >
+                                                {user && (
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteJellyfish(item.id); }}
+                                                        className="absolute top-2 right-2 z-20 w-7 h-7 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center transition-all active:scale-90"
+                                                    >
+                                                        <Trash2 size={13} className="text-white/70" />
+                                                    </button>
+                                                )}
+                                            </CollectionButton>
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>

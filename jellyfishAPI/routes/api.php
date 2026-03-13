@@ -15,7 +15,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 // convenience route that returns the currently authenticated user
 Route::middleware('auth:sanctum')->get('/user/me', function (Illuminate\Http\Request $request) {
-    return response()->json($request->user());
+    $user = $request->user();
+    if ($user->avatar && !\Illuminate\Support\Str::startsWith($user->avatar, ['http://', 'https://'])) {
+        $user->avatar = url("/storage/{$user->avatar}");
+    }
+    return response()->json($user);
 });
 
 // Public routes (GET)

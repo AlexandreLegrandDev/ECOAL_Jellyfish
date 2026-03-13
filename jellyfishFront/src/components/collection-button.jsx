@@ -2,13 +2,16 @@ import React from 'react';
 import { Link } from "react-router-dom";
 import * as Icons from "lucide-react";
 
-const CollectionButton = ({ title, icon, image, navigateTo, height }) => {
+const CollectionButton = ({ title, icon, image, navigateTo, height, aspectRatio, children }) => {
     const IconComponent = icon ? Icons[icon] : null;
 
     return (
-        <Link to={navigateTo} className="group flex flex-col overflow-hidden rounded-2xl border border-accent-purple/40 bg-white/5 shadow-[0_0_15px_rgba(174,48,208,0.2)] hover:shadow-[0_0_25px_rgba(174,48,208,0.5)] hover:border-accent-purple active:scale-95 transition-all duration-300 cursor-pointer">
+        <Link to={navigateTo} className="group relative flex flex-col overflow-hidden rounded-2xl border border-accent-purple/40 bg-white/5 shadow-[0_0_15px_rgba(174,48,208,0.2)] hover:shadow-[0_0_25px_rgba(174,48,208,0.5)] hover:border-accent-purple active:scale-95 transition-all duration-300 cursor-pointer">
 
-            <div className="w-full relative overflow-hidden flex items-center justify-center bg-white/5" style={{ height }}>
+            <div
+                className="w-full relative overflow-hidden flex items-center justify-center bg-white/5"
+                style={{ aspectRatio: aspectRatio || '4/3' }}
+            >
                 {image ? (
                     <img
                         src={image}
@@ -24,6 +27,7 @@ const CollectionButton = ({ title, icon, image, navigateTo, height }) => {
                 <p className="text-sm font-semibold text-white/90 truncate">{title}</p>
             </div>
 
+            {children}
         </Link>
     );
 };

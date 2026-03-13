@@ -60,7 +60,29 @@ class JellyfishController extends Controller
             }
         }
 
+        // Auto-update collection cover image to first jellyfish's image
+        $this->updateCollectionCover($validated['id_collection']);
+
         return response()->json($jellyfish->load('criteriaValues.criteriaField'), 201);
+    }
+
+    /**
+     * After a jellyfish is created, update the collection's cover image
+     * to the first jellyfish's image.
+     */
+    private function updateCollectionCover($collectionId)
+    {
+        $collection = Collection::find($collectionId);
+        if (!$collection) return;
+
+        $firstJelly = Jellyfish::where('id_collection', $collectionId)->first();
+        if ($firstJelly && $firstJelly->img) {
+            $collection->img = $firstJelly->img;
+        } else {
+            // No jellyfishes left — reset to default
+            $collection->img = 'https://upload.wikimedia.org/wikipedia/commons/4/44/Jelly_cc11.jpg';
+        }
+        $collection->save();
     }
 
     /**
@@ -84,7 +106,7 @@ class JellyfishController extends Controller
         $validated = $request->validate([
             'name' => 'string|max:255',
             'img' => 'string',
-            'depth' => 'integer|min:1|max:5'
+            'depth' => 'integer|min:1|max:10'
         ]);
 
         $jellyfish->update($validated);
@@ -102,7 +124,11 @@ class JellyfishController extends Controller
         //     return response()->json(['error' => 'Unauthorized'], 403);
         // }
 
+        $collectionId = $jellyfish->id_collection;
         $jellyfish->delete();
+
+        // Update collection cover after deletion
+        $this->updateCollectionCover($collectionId);
 
         return response()->json(null, 204);
     }

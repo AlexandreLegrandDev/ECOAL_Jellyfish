@@ -102,7 +102,7 @@ const ItemDetail = () => {
     const isBioluminescent = getCriteria('Bioluminescent') === 1 ? 'Yes' : (getCriteria('Bioluminescent') === 0 ? 'No' : 'N/A');
 
     // Make sure we have a valid image URL
-    const imageUrl = item.img && item.img.startsWith('http') 
+    const imageUrl = item.img && (item.img.startsWith('http') || item.img.startsWith('data:'))
         ? item.img 
         : `http://localhost:8000/storage/${item.img}`;
 
@@ -129,8 +129,8 @@ const ItemDetail = () => {
                 </button>
 
                 {/* Gradient Overlay for Title */}
-                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/20 to-transparent flex items-end justify-center pb-6">
-                    <h1 className="text-3xl font-black tracking-wide drop-shadow-xl">
+                <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/20 to-transparent flex items-end justify-start pb-6">
+                    <h1 className="text-3xl font-black tracking-wide drop-shadow-xl pl-6">
                         <span className="text-accent-purple drop-shadow-[0_0_15px_rgba(174,48,208,0.8)]">{item.name} </span>
                         <span className="text-accent-blue drop-shadow-[0_0_15px_rgba(28,95,209,0.8)]">{item.collection?.name || ''}</span>
                     </h1>
@@ -138,9 +138,9 @@ const ItemDetail = () => {
             </div>
 
             {/* Info Card Section */}
-            <div className="px-5 mt-4 flex-1 flex flex-col">
-                <div className="relative rounded-[1.5rem] p-[1px] bg-gradient-to-b from-accent-purple to-accent-blue/30 overflow-hidden flex-1 shadow-[0_0_30px_rgba(174,48,208,0.15)]">
-                    <div className="bg-bg-dark h-full w-full rounded-[1.5rem] p-5">
+            <div className="px-5 mt-4 flex flex-col">
+                <div className="relative rounded-[1.5rem] p-[1px] bg-gradient-to-b from-accent-purple to-accent-blue/30 overflow-hidden shadow-[0_0_30px_rgba(174,48,208,0.15)]">
+                    <div className="bg-bg-dark w-full rounded-[1.5rem] p-5">
 
                         {/* Stats List */}
                         <ul className="space-y-2.5 text-[0.95rem]">

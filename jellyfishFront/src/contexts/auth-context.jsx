@@ -53,10 +53,9 @@ export function AuthProvider({ children }) {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message);
+            if (!res.ok) throw new Error(data.message || "Login failed");
 
-            // Support both "token" and "access_token" keys
-            const receivedToken = data.token || data.access_token;
+            const receivedToken = data.access_token || data.token;
 
             if (receivedToken) {
                 localStorage.setItem("token", receivedToken);
@@ -74,6 +73,8 @@ export function AuthProvider({ children }) {
             }
 
             navigate("/");
+        } catch (err) {
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -89,19 +90,32 @@ export function AuthProvider({ children }) {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message);
+            if (!res.ok) throw new Error(data.message || "Registration failed");
 
-            localStorage.setItem("token", data.access_token);
-            setToken(data.token);
-            setUser(data.user);
+            const receivedToken = data.access_token || data.token;
+
+            if (receivedToken) {
+                localStorage.setItem("token", receivedToken);
+                setToken(receivedToken);
+
+                // Fetch user data after registration (backend doesn't return user)
+                const userRes = await fetch(`${API}/user/me`, {
+                    headers: { Authorization: `Bearer ${receivedToken}`, "Accept": "application/json" },
+                });
+                const userDataResponse = await userRes.json();
+                let userData = userDataResponse.user || userDataResponse.data || userDataResponse;
+                if (userData && userData.avatar && !userData.avatar.startsWith('http')) {
+                    userData.avatar = `${API.replace('/api', '')}/storage/${userData.avatar}`;
+                }
+                setUser(userData);
+            }
+
             navigate("/");
+        } catch (err) {
+            throw err;
         } finally {
             setLoading(false);
         }
-        localStorage.setItem("token", data.access_token);
-        setToken(data.token);
-        setUser(data.user);
-        navigate("/");
     }
 
     async function logout() {

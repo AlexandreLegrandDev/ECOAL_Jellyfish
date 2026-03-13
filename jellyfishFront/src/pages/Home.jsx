@@ -51,9 +51,9 @@ const Home = () => {
               <p className="col-span-2 md:col-span-4 text-center text-white/50">Loading collections...</p>
             ) : collections.length > 0 ? (
               collections.map((collection) => {
-                const imageUrl = collection.img && collection.img.startsWith('http') 
+                const imageUrl = collection.img && (collection.img.startsWith('http') || collection.img.startsWith('data:'))
                   ? collection.img 
-                  : `http://localhost:8000/storage/${collection.img}`;
+                  : collection.img ? `http://localhost:8000/storage/${collection.img}` : null;
 
                 return (
                   <Link to={`/collection` /* You can change this to point to the actual collection ID view if it exists later */} key={collection.id}
